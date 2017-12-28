@@ -1,19 +1,17 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import argparse
-import io
 import json
 import logging
 import os
 import os.path
 import re
+import time
 from HTMLParser import HTMLParser
 # noinspection PyProtectedMember
 from mimetypes import MimeTypes
 
 import requests
-import time
-from bs4 import BeautifulSoup as Soup
 
 
 class FileHandler:
@@ -90,8 +88,8 @@ class SauceNao(object):
         files = FileHandler.get_files(directory)
         for file_name in files:
             start_time = time.time()
-            result = self.check_image(file_name)
-            sorted_results = self.parse_results(result, file_name)
+            results = self.check_image(file_name)
+            sorted_results = self.parse_results(results, file_name)
 
             from pprint import pprint
             pprint(sorted_results)
@@ -139,6 +137,7 @@ class SauceNao(object):
     @staticmethod
     def parse_results(text, file_name):
         """
+        parse the results and sort them descending by similarity
 
         :param text:
         :param file_name:
