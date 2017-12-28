@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import argparse
 import io
+import json
 import logging
 import os
 import os.path
@@ -87,20 +88,25 @@ class SauceNao(object):
         self.mime = MimeTypes()
 
         files = FileHandler.get_files(directory)
-        for f in files:
+        for file_name in files:
             start_time = time.time()
-            self.check_image(f)
+            result = self.check_image(file_name)
+            sorted_results = self.parse_results(result, file_name)
+
+            from pprint import pprint
+            pprint(sorted_results)
+
             duration = time.time() - start_time
             time.sleep((30 / self.LIMIT_30_SECONDS) - duration)
 
-    def check_image(self, filename):
+    def check_image(self, file_name):
         """
         check the possible sources for the given file
 
-        :param filename:
+        :param file_name:
         :return:
         """
-        file_path = os.path.join(self.directory, filename)
+        file_path = os.path.join(self.directory, file_name)
 
         files = {'file': open(file_path, 'rb').read()}
         headers = {
@@ -128,8 +134,23 @@ class SauceNao(object):
             params['api_key'] = args.api_key
 
         link = requests.post(url=self.SEARCH_POST_URL, files=files, params=params, headers=headers)
-        soup = Soup(link.text, 'html.parser')
-        io.open('test.html', mode='w', encoding='utf-8').write(soup.prettify())
+        return link.text
+
+    @staticmethod
+    def parse_results(text, file_name):
+        """
+
+        :param text:
+        :param file_name:
+        :return:
+        """
+        result = json.loads(text)
+
+        if not result['results']:
+            logger.info('No results found for image: {0:s}'.format(file_name))
+
+        results = [res for res in result['results']]
+        return sorted(results, key=lambda k: float(k['header']['similarity']), reverse=True)
 
 
 if __name__ == '__main__':
