@@ -77,6 +77,7 @@ class SauceNao(object):
     LIMIT_30_SECONDS = 20
 
     # 0=html, 2=json but json is omitting important data but includes more data about authors
+    # ToDo: add option to merge both results
     OUTPUT_TYPE = 0
 
     directory = None
