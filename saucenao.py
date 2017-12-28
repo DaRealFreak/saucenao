@@ -12,6 +12,8 @@ from HTMLParser import HTMLParser
 from mimetypes import MimeTypes
 
 import requests
+from bs4 import BeautifulSoup as Soup
+from bs4 import element
 
 
 class FileHandler:
@@ -69,9 +71,13 @@ class SauceNao(object):
     """
 
     SEARCH_POST_URL = 'http://saucenao.com/search.php'
+
     # basic account allows currently 20 images within 30 seconds
     # you can increase this value is you have a premium account
     LIMIT_30_SECONDS = 20
+
+    # 0=html, 2=json but json is omitting important data but includes more data about authors
+    OUTPUT_TYPE = 0
 
     directory = None
     mime = None
@@ -89,9 +95,15 @@ class SauceNao(object):
         for file_name in files:
             start_time = time.time()
             result_html = self.check_image(file_name)
-            sorted_results = self.parse_results_html(result_html, file_name)
+            sorted_results = self.parse_results_json(result_html, file_name)
+
+            from pprint import pprint
+            pprint(sorted_results)
+
             duration = time.time() - start_time
-            time.sleep((30 / self.LIMIT_30_SECONDS) - duration)
+            if duration < (30 / self.LIMIT_30_SECONDS):
+                logger.debug("sleeping '{:.2f}' seconds".format((30 / self.LIMIT_30_SECONDS) - duration))
+                time.sleep((30 / self.LIMIT_30_SECONDS) - duration)
 
     def check_image(self, file_name):
         """
@@ -120,7 +132,7 @@ class SauceNao(object):
             'frame': 1,
             'hide': 0,
             # parameters taken from API documentation: https://saucenao.com/user.php?page=search-api
-            'output_type': 0,
+            'output_type': self.OUTPUT_TYPE,
             'db': args.databases,
         }
 
@@ -128,24 +140,52 @@ class SauceNao(object):
             params['api_key'] = args.api_key
 
         link = requests.post(url=self.SEARCH_POST_URL, files=files, params=params, headers=headers)
+
+        if self.OUTPUT_TYPE == 0:
+            return self.parse_results_html_to_json(link.text)
+
         return link.text
 
     @staticmethod
-    def parse_results_html(text, file_name):
+    def parse_results_html_to_json(html):
         """
         parse the results and sort them descending by similarity
 
-        :param text:
-        :param file_name:
+        :param html:
         :return:
         """
-        return []
+        soup = Soup(html, 'html.parser')
+        # basic format of json API response
+        results = {'header': {}, 'results': []}
+
+        for res in soup.find_all('td', attrs={"class": "resulttablecontent"}):  # type: element.Tag
+            title = res.find_next('div', attrs={"class": "resulttitle"}).text
+            similarity = res.find_next('div', attrs={"class": "resultsimilarityinfo"}).text.replace('%', '')
+            alternate_links = [a_tag['href'] for a_tag in
+                               res.find_next('div', attrs={"class": "resultmiscinfo"}).find_all('a', href=True)]
+            content_column_tag = res.find_next('div', attrs={"class": "resultcontentcolumn"})
+            for br in content_column_tag.find_all("br"):
+                br.replace_with("\n")
+            content_column = content_column_tag.text
+
+            result = {
+                'header': {
+                    'similarity': similarity
+                },
+                'data': {
+                    'title': title,
+                    'content': content_column,
+                    'ext_urls': alternate_links
+                }
+            }
+            results['results'].append(result)
+
+        return json.dumps(results)
 
     @staticmethod
     def parse_results_json(text, file_name):
         """
         parse the results and sort them descending by similarity
-        currently fucking useless since the most essential information is missing in the json output....
 
         :param text:
         :param file_name:
