@@ -88,12 +88,8 @@ class SauceNao(object):
         files = FileHandler.get_files(directory)
         for file_name in files:
             start_time = time.time()
-            results = self.check_image(file_name)
-            sorted_results = self.parse_results(results, file_name)
-
-            from pprint import pprint
-            pprint(sorted_results)
-
+            result_html = self.check_image(file_name)
+            sorted_results = self.parse_results_html(result_html, file_name)
             duration = time.time() - start_time
             time.sleep((30 / self.LIMIT_30_SECONDS) - duration)
 
@@ -124,7 +120,7 @@ class SauceNao(object):
             'frame': 1,
             'hide': 0,
             # parameters taken from API documentation: https://saucenao.com/user.php?page=search-api
-            'output_type': 2,
+            'output_type': 0,
             'db': args.databases,
         }
 
@@ -135,9 +131,21 @@ class SauceNao(object):
         return link.text
 
     @staticmethod
-    def parse_results(text, file_name):
+    def parse_results_html(text, file_name):
         """
         parse the results and sort them descending by similarity
+
+        :param text:
+        :param file_name:
+        :return:
+        """
+        return []
+
+    @staticmethod
+    def parse_results_json(text, file_name):
+        """
+        parse the results and sort them descending by similarity
+        currently fucking useless since the most essential information is missing in the json output....
 
         :param text:
         :param file_name:
@@ -156,7 +164,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--dir', help='directory to sort', required=True)
     parser.add_argument('-db', '--databases', default=999, type=int, help='which databases should be searched')
+    parser.add_argument('-m', '--minimum-match', default=65, type=int, help='minimum similarity percentage')
     parser.add_argument('-k', '--api-key', help='API key of your account on saucenao')
+    parser.add_argument('-x', '--exclude-categories', type=str, help='exclude specific categories from moving')
+    parser.add_argument('-mv', '--move-to-categories', default=False, type=bool, help='move images to categories')
     args = parser.parse_args()
 
     logging.basicConfig()
