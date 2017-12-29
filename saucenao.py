@@ -7,6 +7,7 @@ import os
 import os.path
 import re
 import time
+import sys
 # noinspection PyProtectedMember
 from mimetypes import MimeTypes
 
@@ -69,6 +70,9 @@ class SauceNao(object):
             filtered_results = self.filter_results(sorted_results)
 
             if args.move_to_categories:
+                if not filtered_results:
+                    continue
+
                 category = self.get_content_value(filtered_results, self.CONTENT_CATEGORY_KEY)
                 if not category:
                     logger.info(u"no category found for file: {0:s}".format(file_name))
@@ -83,7 +87,6 @@ class SauceNao(object):
                 FileHandler.move_to_category(file_name, category, base_directory=args.dir)
             else:
                 # ToDo: what exactly is the default case I want here?
-                # possibly printing the list
                 pass
 
             duration = time.time() - start_time
@@ -121,8 +124,8 @@ class SauceNao(object):
         :param y:
         :return:
         """
-        z = x.copy()  # start with x's keys and values
-        z.update(y)  # modifies z with y's keys and values & returns None
+        z = x.copy()
+        z.update(y)
         return z
 
     def merge_results(self, result, additional_result):
@@ -184,6 +187,11 @@ class SauceNao(object):
             params['api_key'] = args.api_key
 
         link = requests.post(url=self.SEARCH_POST_URL, files=files, params=params, headers=headers)
+
+        if 'Daily Search Limit Exceeded' in link.text:  # and output_type == self.API_HTML_TYPE:
+            # somehow the daily search limit is only for the html API output still getting results with JSON
+            logger.error(u"Daily search limit reached, continue with JSON output if context is not needed...")
+            sys.exit(-1)
 
         if output_type == self.API_HTML_TYPE:
             return self.parse_results_html_to_json(link.text)
