@@ -6,8 +6,8 @@ import logging
 import os
 import os.path
 import re
-import time
 import sys
+import time
 # noinspection PyProtectedMember
 from mimetypes import MimeTypes
 
@@ -60,20 +60,22 @@ class SauceNao(object):
         for file_name in files:
             start_time = time.time()
             result = self.check_image(file_name, self.API_HTML_TYPE)
-            sorted_results = self.parse_results_json(result, file_name)
+            sorted_results = self.parse_results_json(result)
 
             if args.combine_api_types:
                 additional_result = self.check_image(file_name, self.API_JSON_TYPE)
-                additional_sorted_results = self.parse_results_json(additional_result, file_name)
+                additional_sorted_results = self.parse_results_json(additional_result)
                 sorted_results = self.merge_results(sorted_results, additional_sorted_results)
 
             filtered_results = self.filter_results(sorted_results)
 
-            if args.move_to_categories:
-                if not filtered_results:
-                    continue
+            if not filtered_results:
+                logger.info(u'No results found for image: {0:s}'.format(file_name))
+                continue
 
+            if args.move_to_categories:
                 category = self.get_content_value(filtered_results, self.CONTENT_CATEGORY_KEY)
+
                 if not category:
                     logger.info(u"no category found for file: {0:s}".format(file_name))
                     continue
@@ -243,21 +245,15 @@ class SauceNao(object):
         return json.dumps(results)
 
     @staticmethod
-    def parse_results_json(text, file_name):
+    def parse_results_json(text):
         """
         parse the results and sort them descending by similarity
 
         :type text: str
-        :type file_name: str
         :param text:
-        :param file_name:
         :return:
         """
         result = json.loads(text)
-
-        if not result['results']:
-            logger.info('No results found for image: {0:s}'.format(file_name))
-
         results = [res for res in result['results']]
         return sorted(results, key=lambda k: float(k['header']['similarity']), reverse=True)
 
