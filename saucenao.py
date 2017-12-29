@@ -51,7 +51,16 @@ class SauceNao(object):
         self.mime = MimeTypes()
 
         files = FileHandler.get_files(directory)
+        self.check_files(files)
 
+    def check_files(self, files):
+        """
+        check all files with saucenao and execute the specified tasks
+
+        :type files: list
+        :param files:
+        :return:
+        """
         if args.exclude_categories:
             excludes = [l.lower() for l in args.exclude_categories.split(",")]
         else:
