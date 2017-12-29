@@ -7,81 +7,14 @@ import os
 import os.path
 import re
 import time
-from HTMLParser import HTMLParser
 # noinspection PyProtectedMember
 from mimetypes import MimeTypes
-from shutil import move
 
 import requests
 from bs4 import BeautifulSoup as Soup
 from bs4 import element
 
-
-class FileHandler:
-    def __init__(self):
-        """
-        initializing function
-
-        """
-        pass
-
-    @staticmethod
-    def get_files(directory):
-        """
-        get all files from given directory
-
-        :param directory:
-        :return:
-        """
-        for f in os.listdir(directory):
-            if os.path.isfile(os.path.join(directory, f)):
-                yield f
-
-    @staticmethod
-    def ensure_unicode(text):
-        """
-        ensure unicode encoding
-
-        :param text:
-        :return:
-        """
-        if re.match(r'.*&#[\d]{2,6};.*', text):
-            return FileHandler.ensure_unicode(HTMLParser().unescape(text))
-        if isinstance(text, str):
-            text = text.decode('utf8')
-        return unicode(text)
-
-    @staticmethod
-    def unicode_translate(text, chars=u"", replacement=u""):
-        """
-        replacement for the string.maketrans function
-
-        :param text:
-        :param chars:
-        :param replacement:
-        :return:
-        """
-        for char in chars:
-            text = text.replace(char, replacement[chars.index(char)])
-        return text
-
-    @staticmethod
-    def move_to_category(filename, category):
-        """
-        move file to the sub_category folder
-
-        :param filename:
-        :param category:
-        :return:
-        """
-        logger.info(u"moving {0:s} to category: {1:s}".format(filename, category))
-        folder = FileHandler.ensure_unicode(re.sub(r'["/?*:<>|]', r'', category))
-        folder = os.path.join(args.dir, folder)
-        folder = os.path.abspath(FileHandler.unicode_translate(folder, u"\n\t\r", u"   "))
-        if not os.path.exists(folder):
-            os.makedirs(folder)
-
-        move(os.path.join(args.dir, filename), os.path.join(folder, filename))
+from filehandler import FileHandler
 
 
 class SauceNao(object):
@@ -146,7 +79,8 @@ class SauceNao(object):
                     logger.info(u"skipping excluded category: {0:s} ({1:s})".format(category, file_name))
                     continue
 
-                FileHandler.move_to_category(file_name, category)
+                logger.info(u"moving {0:s} to category: {1:s}".format(file_name, category))
+                FileHandler.move_to_category(file_name, category, base_directory=args.dir)
             else:
                 # ToDo: what exactly is the default case I want here?
                 # possibly printing the list
