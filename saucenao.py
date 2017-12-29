@@ -270,7 +270,14 @@ class SauceNao(object):
         results = {'header': {}, 'results': []}
 
         for res in soup.find_all('td', attrs={"class": "resulttablecontent"}):  # type: element.Tag
-            title = res.find_next('div', attrs={"class": "resulttitle"}).text
+            # optional field in saucenao
+            title_tag = res.find_next('div', attrs={"class": "resulttitle"})
+            if title_tag:
+                title = title_tag.text
+            else:
+                title = ''
+
+            # mandatory field in saucenao
             similarity = res.find_next('div', attrs={"class": "resultsimilarityinfo"}).text.replace('%', '')
             alternate_links = [a_tag['href'] for a_tag in
                                res.find_next('div', attrs={"class": "resultmiscinfo"}).find_all('a', href=True)]
