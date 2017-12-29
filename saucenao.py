@@ -76,7 +76,7 @@ class FileHandler:
         """
         logger.info(u"moving {0:s} to category: {1:s}".format(filename, category))
         folder = FileHandler.ensure_unicode(re.sub(r'["/?*:<>|]', r'', category))
-        folder = os.path.join(args.dir, 'testing', folder)
+        folder = os.path.join(args.dir, folder)
         folder = os.path.abspath(FileHandler.unicode_translate(folder, u"\n\t\r", u"   "))
         if not os.path.exists(folder):
             os.makedirs(folder)
