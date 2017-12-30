@@ -83,11 +83,14 @@ class SauceNao(object):
                 continue
 
             if args.move_to_categories:
-                category = self.get_content_value(filtered_results, self.CONTENT_CATEGORY_KEY)
+                categories = self.get_content_value(filtered_results, self.CONTENT_CATEGORY_KEY)
 
-                if not category:
-                    logger.info(u"no category found for file: {0:s}".format(file_name))
+                if not categories:
+                    logger.info(u"no categories found for file: {0:s}".format(file_name))
                     continue
+
+                # take the first category
+                category = categories[0]
 
                 # sub categories we don't want to move like original etc
                 if category.lower() in excludes:
@@ -121,7 +124,7 @@ class SauceNao(object):
             if 'content' in result['data'].keys():
                 for content in result['data']['content']:
                     if re.match('{0:s}: .*'.format(key), content):
-                        return ''.join(re.split(r'{0:s}: '.format(key), content)[1:])
+                        return ''.join(re.split(r'{0:s}: '.format(key), content)[1:]).split('\n')
         return ''
 
     @staticmethod
@@ -237,6 +240,8 @@ class SauceNao(object):
             content_column = []
             content_column_tags = res.find_all('div', attrs={"class": "resultcontentcolumn"})
             for content_column_tag in content_column_tags:
+                for br in content_column_tag.find_all('br'):
+                    br.replace_with('\n')
                 content_column.append(content_column_tag.text)
 
             result = {
