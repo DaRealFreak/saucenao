@@ -1,12 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import argparse
 import json
 import logging
 import os
 import os.path
 import re
-import sys
 import time
 # noinspection PyProtectedMember
 from mimetypes import MimeTypes
@@ -16,6 +14,10 @@ from bs4 import BeautifulSoup as Soup
 from bs4 import element
 
 from filehandler import FileHandler
+
+
+class DailyLimitReachedException(Exception):
+    pass
 
 
 class SauceNao(object):
@@ -40,12 +42,27 @@ class SauceNao(object):
     directory = None
     mime = None
 
-    def __init__(self):
+    def __init__(self, directory, databases=999, minimum_similarity=65, combine_api_types=False, api_key=None,
+                 exclude_categories='', move_to_categories=False, output_type=API_HTML_TYPE):
         """
         initializing function
+        :param directory:
+        :param databases:
+        :param minimum_similarity:
+        :param combine_api_types:
+        :param api_key:
+        :param exclude_categories:
+        :param move_to_categories:
         """
-        self.args = self.parse_arguments()
-        self.directory = self.args.dir
+        self.directory = directory
+        self.databases = databases
+        self.minimum_similarity = minimum_similarity
+        self.combine_api_types = combine_api_types
+        self.api_key = api_key
+        self.exclude_categories = exclude_categories
+        self.move_to_categories = move_to_categories
+        self.output_type = output_type
+
         self.mime = MimeTypes()
         logging.basicConfig()
         self.logger = logging.getLogger("logger")
@@ -58,18 +75,6 @@ class SauceNao(object):
 
         :return:
         """
-        parser = argparse.ArgumentParser()
-        parser.add_argument('-d', '--dir', help='directory to sort', required=True)
-        parser.add_argument('-db', '--databases', default=999, type=int, help='which databases should be searched')
-        parser.add_argument('-min', '--minimum_similarity', default=65, type=float,
-                            help='minimum similarity percentage')
-        parser.add_argument('-c', '--combine-api-types', action='store_true',
-                            help='combine html and json api response to '
-                                 'retrieve more information')
-        parser.add_argument('-k', '--api-key', help='API key of your account on SauceNao')
-        parser.add_argument('-x', '--exclude-categories', type=str, help='exclude specific categories from moving')
-        parser.add_argument('-mv', '--move-to-categories', action='store_true', help='move images to categories')
-        return parser.parse_args()
 
     def check_files(self, files):
         """
@@ -79,8 +84,8 @@ class SauceNao(object):
         :param files:
         :return:
         """
-        if self.args.exclude_categories:
-            excludes = [l.lower() for l in self.args.exclude_categories.split(",")]
+        if self.exclude_categories:
+            excludes = [l.lower() for l in self.exclude_categories.split(",")]
         else:
             excludes = []
 
@@ -93,7 +98,7 @@ class SauceNao(object):
                 self.logger.info(u'No results found for image: {0:s}'.format(file_name))
                 continue
 
-            if self.args.move_to_categories:
+            if self.move_to_categories:
                 categories = self.get_content_value(filtered_results, self.CONTENT_CATEGORY_KEY)
 
                 if not categories:
@@ -109,7 +114,7 @@ class SauceNao(object):
                     continue
 
                 self.logger.info(u"moving {0:s} to category: {1:s}".format(file_name, category))
-                FileHandler.move_to_category(file_name, category, base_directory=self.args.dir)
+                FileHandler.move_to_category(file_name, category, base_directory=self.directory)
             else:
                 yield {
                     'filename': file_name,
@@ -127,13 +132,16 @@ class SauceNao(object):
         :param file_name:
         :return:
         """
-        result = self.check_image(file_name, self.API_HTML_TYPE)
-        sorted_results = self.parse_results_json(result)
+        if self.combine_api_types:
+            result = self.check_image(file_name, self.API_HTML_TYPE)
+            sorted_results = self.parse_results_json(result)
 
-        if self.args.combine_api_types:
             additional_result = self.check_image(file_name, self.API_JSON_TYPE)
             additional_sorted_results = self.parse_results_json(additional_result)
             sorted_results = self.merge_results(sorted_results, additional_sorted_results)
+        else:
+            result = self.check_image(file_name, self.output_type)
+            sorted_results = self.parse_results_json(result)
 
         filtered_results = self.filter_results(sorted_results)
         return filtered_results
@@ -169,18 +177,18 @@ class SauceNao(object):
             'hide': 0,
             # parameters taken from API documentation: https://saucenao.com/user.php?page=search-api
             'output_type': output_type,
-            'db': self.args.databases,
+            'db': self.databases,
         }
 
-        if self.args.api_key:
-            params['api_key'] = self.args.api_key
+        if self.api_key:
+            params['api_key'] = self.api_key
 
         link = requests.post(url=self.SEARCH_POST_URL, files=files, params=params, headers=headers)
 
         if 'Daily Search Limit Exceeded' in link.text:  # and output_type == self.API_HTML_TYPE:
             # somehow the daily search limit is only for the html API output still getting results with JSON
-            self.logger.error(u"Daily search limit reached, continue with JSON output if context is not needed...")
-            sys.exit(-1)
+            self.logger.error(u"Daily search limit reached, continue with JSON output if context is not needed")
+            raise DailyLimitReachedException(u'Daily search limit reached')
 
         if output_type == self.API_HTML_TYPE:
             return self.parse_results_html_to_json(link.text)
@@ -256,7 +264,7 @@ class SauceNao(object):
         """
         filtered_results = []
         for res in sorted_results:
-            if float(res['header']['similarity']) >= float(self.args.minimum_similarity):
+            if float(res['header']['similarity']) >= float(self.minimum_similarity):
                 filtered_results.append(res)
             else:
                 # we can break here since the results are sorted by similarity anyways
