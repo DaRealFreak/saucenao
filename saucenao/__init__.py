@@ -24,10 +24,13 @@ def run_application():
     parser.add_argument('-x', '--exclude-categories', type=str, help='exclude specific categories from moving')
     parser.add_argument('-mv', '--move-to-categories', action='store_true', help='move images to categories')
     parser.add_argument('-o', '--output-type', default=0, type=int, help='0(html) or 2(json) API response')
+    parser.add_argument('-sf', '--start-file', help='with which file the checks start in case of after reaching the '
+                                                    'daily limit')
     args = parser.parse_args()
 
     files = FileHandler.get_files(args.dir)
     sauce_nao = SauceNao(args.dir, databases=args.databases, minimum_similarity=args.minimum_similarity,
                          combine_api_types=args.combine_api_types, api_key=args.api_key,
-                         exclude_categories=args.exclude_categories, move_to_categories=args.move_to_categories)
+                         exclude_categories=args.exclude_categories, move_to_categories=args.move_to_categories,
+                         start_file=args.start_file)
     return sauce_nao.check_files(files)

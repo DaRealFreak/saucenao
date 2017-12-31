@@ -43,9 +43,10 @@ class SauceNao(object):
     mime = None
 
     def __init__(self, directory, databases=999, minimum_similarity=65, combine_api_types=False, api_key=None,
-                 exclude_categories='', move_to_categories=False, output_type=API_HTML_TYPE):
+                 exclude_categories='', move_to_categories=False, output_type=API_HTML_TYPE, start_file=None):
         """
         initializing function
+
         :param directory:
         :param databases:
         :param minimum_similarity:
@@ -53,6 +54,7 @@ class SauceNao(object):
         :param api_key:
         :param exclude_categories:
         :param move_to_categories:
+        :param start_file:
         """
         self.directory = directory
         self.databases = databases
@@ -62,6 +64,7 @@ class SauceNao(object):
         self.exclude_categories = exclude_categories
         self.move_to_categories = move_to_categories
         self.output_type = output_type
+        self.start_file = start_file
 
         self.mime = MimeTypes()
         logging.basicConfig()
@@ -88,6 +91,14 @@ class SauceNao(object):
             excludes = [l.lower() for l in self.exclude_categories.split(",")]
         else:
             excludes = []
+
+        if self.start_file:
+            # change files from generator to list
+            files = list(files)
+            try:
+                files = files[files.index(self.start_file):]
+            except ValueError:
+                pass
 
         for file_name in files:
             start_time = time.time()
