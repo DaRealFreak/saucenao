@@ -34,6 +34,22 @@ def generate_small_jpg():
 
 class TestSauceNaoLimits(unittest.TestCase):
 
+    def setUp(self):
+        """
+        constructor for the unittest
+
+        :return:
+        """
+        self.test_jpg = generate_small_jpg()
+
+    def tearDown(self):
+        """
+        destructor for the unittest
+
+        :return:
+        """
+        os.remove(self.test_jpg)
+
     def test_limit_html(self):
         """
         test cases for SauceNAO limits with return type html
@@ -42,21 +58,20 @@ class TestSauceNaoLimits(unittest.TestCase):
 
         :return:
         """
-        test_jpg = generate_small_jpg()
         saucenao = SauceNao(os.getcwd(), output_type=SauceNao.API_HTML_TYPE)
 
         # test case: ip limit not reached, no api key set
-        result = saucenao.check_file(test_jpg)
+        result = saucenao.check_file(self.test_jpg)
         self.assertIsInstance(result, dict)
 
         # test case: ip limit not reached, api key set
         saucenao.api_key = SAUCENAO_API_KEY
-        result = saucenao.check_file(test_jpg)
+        result = saucenao.check_file(self.test_jpg)
         self.assertIsInstance(result, dict)
 
         # now to reach the daily limit we spam the same image until we receive the exception
         saucenao.api_key = None
-        test_files = [test_jpg] * SAUCENAO_IP_LIMIT
+        test_files = [self.test_jpg] * SAUCENAO_IP_LIMIT - 2
         try:
             # check_files returns a generator so we have to improvise here a bit
             for _ in saucenao.check_files(test_files):
@@ -65,13 +80,11 @@ class TestSauceNaoLimits(unittest.TestCase):
             pass
 
         # test case: ip limit reached, account limit not reached but api_key not set
-        self.assertRaises(DailyLimitReachedException, saucenao.check_file, test_jpg)
+        self.assertRaises(DailyLimitReachedException, saucenao.check_file, self.test_jpg)
 
         # test case: ip limit reached, account limit not reached but api_key set
         saucenao.api_key = SAUCENAO_API_KEY
-        self.assertRaises(DailyLimitReachedException, saucenao.check_file, test_jpg)
-
-        os.remove(test_jpg)
+        self.assertRaises(DailyLimitReachedException, saucenao.check_file, self.test_jpg)
 
     def test_limit_json(self):
         """
@@ -81,21 +94,20 @@ class TestSauceNaoLimits(unittest.TestCase):
 
         :return:
         """
-        test_jpg = generate_small_jpg()
         saucenao = SauceNao(os.getcwd(), output_type=SauceNao.API_JSON_TYPE)
 
         # test case: ip limit not reached, no api key set
-        result = saucenao.check_file(test_jpg)
+        result = saucenao.check_file(self.test_jpg)
         self.assertIsInstance(result, dict)
 
         # test case: ip limit not reached, api key set
         saucenao.api_key = SAUCENAO_API_KEY
-        result = saucenao.check_file(test_jpg)
+        result = saucenao.check_file(self.test_jpg)
         self.assertIsInstance(result, dict)
 
         # now to reach the daily limit we spam the same image until we receive the exception
         saucenao.api_key = None
-        test_files = [test_jpg] * SAUCENAO_IP_LIMIT
+        test_files = [self.test_jpg] * SAUCENAO_IP_LIMIT - 2
         try:
             # check_files returns a generator so we have to improvise here a bit
             for _ in saucenao.check_files(test_files):
@@ -104,13 +116,11 @@ class TestSauceNaoLimits(unittest.TestCase):
             pass
 
         # test case: ip limit reached, account limit not reached but api_key not set
-        self.assertRaises(DailyLimitReachedException, saucenao.check_file, test_jpg)
+        self.assertRaises(DailyLimitReachedException, saucenao.check_file, self.test_jpg)
 
         # test case: ip limit reached, account limit not reached but api_key set
         saucenao.api_key = SAUCENAO_API_KEY
-        self.assertRaises(DailyLimitReachedException, saucenao.check_file, test_jpg)
-
-        os.remove(test_jpg)
+        self.assertRaises(DailyLimitReachedException, saucenao.check_file, self.test_jpg)
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestSauceNaoLimits)
