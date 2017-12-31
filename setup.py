@@ -10,9 +10,13 @@ setup(name='SauceNAO',
       author_email='steffen.keuper@web.de',
       license='MIT',
       install_requires=[
-          'Pillow',
           'bs4',
-          'requests',
-          'python-dotenv'
+          'requests'
       ],
+      extras_require={
+          'unittests': [
+              'python-dotenv',
+              'Pillow'
+          ]
+      },
       zip_safe=True)
