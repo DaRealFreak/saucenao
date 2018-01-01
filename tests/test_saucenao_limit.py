@@ -33,6 +33,18 @@ def generate_small_jpg():
 
 
 class TestSauceNaoLimits(unittest.TestCase):
+    """
+    test cases to check the limits for SauceNAO
+
+    currently not covered is the test case: account limit reached, ip limit not reached
+    have to add a proxy for this test case to be covered.
+
+    Test cases covered:
+     - HTML response type: ip/account limit not reached
+     - JSON response type: ip/account limit not reached
+     - HTML response type: ip limit reached
+     - JSON response type: ip limit reached
+    """
 
     def setUp(self):
         """
@@ -41,6 +53,12 @@ class TestSauceNaoLimits(unittest.TestCase):
         :return:
         """
         self.test_jpg = generate_small_jpg()
+        self.saucenao_html = SauceNao(os.getcwd(), output_type=SauceNao.API_HTML_TYPE)
+        self.saucenao_json = SauceNao(os.getcwd(), output_type=SauceNao.API_JSON_TYPE)
+        self.tests_order = [
+            self.check_response_no_api_key,
+            self.check_response_api_key,
+        ]
 
     def tearDown(self):
         """
@@ -50,77 +68,71 @@ class TestSauceNaoLimits(unittest.TestCase):
         """
         os.remove(self.test_jpg)
 
-    def test_limit_html(self):
+    def run_tests(self, saucenao, success):
         """
-        test cases for SauceNAO limits with return type html
-        currently not covered: account limit reached but ip limit not reached
-        not possible to cover without proxy usage
+        run the different tests with the given SauceNao instance
+
+        :param saucenao:
+        :param success:
+        :return:
+        """
+        for test in self.tests_order:
+            try:
+                test(saucenao, assert_success=success)
+            except Exception as e:
+                self.fail("{} failed ({}: {})".format(test, type(e), e))
+
+    def test_limits(self):
+        """
+        test the limits of SauceNAO
 
         :return:
         """
-        saucenao = SauceNao(os.getcwd(), output_type=SauceNao.API_HTML_TYPE)
+        self.run_tests(saucenao=self.saucenao_html, success=True)
+        self.run_tests(saucenao=self.saucenao_json, success=True)
 
-        # test case: ip limit not reached, no api key set
-        result = saucenao.check_file(self.test_jpg)
-        self.assertIsInstance(result, dict)
-
-        # test case: ip limit not reached, api key set
-        saucenao.api_key = SAUCENAO_API_KEY
-        result = saucenao.check_file(self.test_jpg)
-        self.assertIsInstance(result, dict)
-
-        # now to reach the daily limit we spam the same image until we receive the exception
-        saucenao.api_key = None
-        test_files = [self.test_jpg] * SAUCENAO_IP_LIMIT - 2
+        # now reach the daily limit
+        test_files = [self.test_jpg] * (SAUCENAO_IP_LIMIT - 2)
         try:
             # check_files returns a generator so we have to improvise here a bit
-            for _ in saucenao.check_files(test_files):
+            for _ in self.saucenao_html.check_files(test_files):
                 pass
         except DailyLimitReachedException:
             pass
 
-        # test case: ip limit reached, account limit not reached but api_key not set
-        self.assertRaises(DailyLimitReachedException, saucenao.check_file, self.test_jpg)
+        self.run_tests(saucenao=self.saucenao_html, success=False)
+        self.run_tests(saucenao=self.saucenao_json, success=False)
 
-        # test case: ip limit reached, account limit not reached but api_key set
-        saucenao.api_key = SAUCENAO_API_KEY
-        self.assertRaises(DailyLimitReachedException, saucenao.check_file, self.test_jpg)
-
-    def test_limit_json(self):
+    def check_response_no_api_key(self, saucenao, assert_success=True):
         """
-        test cases for SauceNAO limits with return type json
-        currently not covered: account limit reached but ip limit not reached
-        not possible to cover without proxy usage
+        check the response without an API key
+        on assert_success=True expect a dictionary, else an exception
 
+        :param saucenao:
+        :param assert_success:
         :return:
         """
-        saucenao = SauceNao(os.getcwd(), output_type=SauceNao.API_JSON_TYPE)
+        if assert_success:
+            result = saucenao.check_file(self.test_jpg)
+            self.assertIsInstance(result, list)
+        else:
+            self.assertRaises(DailyLimitReachedException, saucenao.check_file, self.test_jpg)
 
-        # test case: ip limit not reached, no api key set
-        result = saucenao.check_file(self.test_jpg)
-        self.assertIsInstance(result, dict)
+    def check_response_api_key(self, saucenao, assert_success=True):
+        """
+        check the response with an API key
+        on assert_success=True expect a dictionary, else an exception
 
-        # test case: ip limit not reached, api key set
+        :param saucenao:
+        :param assert_success:
+        :return:
+        """
         saucenao.api_key = SAUCENAO_API_KEY
-        result = saucenao.check_file(self.test_jpg)
-        self.assertIsInstance(result, dict)
-
-        # now to reach the daily limit we spam the same image until we receive the exception
-        saucenao.api_key = None
-        test_files = [self.test_jpg] * SAUCENAO_IP_LIMIT - 2
-        try:
-            # check_files returns a generator so we have to improvise here a bit
-            for _ in saucenao.check_files(test_files):
-                pass
-        except DailyLimitReachedException:
-            pass
-
-        # test case: ip limit reached, account limit not reached but api_key not set
-        self.assertRaises(DailyLimitReachedException, saucenao.check_file, self.test_jpg)
-
-        # test case: ip limit reached, account limit not reached but api_key set
-        saucenao.api_key = SAUCENAO_API_KEY
-        self.assertRaises(DailyLimitReachedException, saucenao.check_file, self.test_jpg)
+        if assert_success:
+            result = saucenao.check_file(self.test_jpg)
+            self.assertIsInstance(result, list)
+        else:
+            self.assertRaises(DailyLimitReachedException, saucenao.check_file, self.test_jpg)
 
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestSauceNaoLimits)
