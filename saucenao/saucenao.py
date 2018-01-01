@@ -196,9 +196,8 @@ class SauceNao(object):
 
         link = requests.post(url=self.SEARCH_POST_URL, files=files, params=params, headers=headers)
 
-        if 'Daily Search Limit Exceeded' in link.text:  # and output_type == self.API_HTML_TYPE:
-            # somehow the daily search limit is only for the html API output still getting results with JSON
-            self.logger.error(u"Daily search limit reached, continue with JSON output if context is not needed")
+        if 'Daily Search Limit Exceeded' in link.text:
+            self.logger.error(u"Daily search limit reached")
             raise DailyLimitReachedException(u'Daily search limit reached')
 
         if output_type == self.API_HTML_TYPE:
