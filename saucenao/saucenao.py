@@ -69,7 +69,7 @@ class SauceNao(object):
         self.mime = MimeTypes()
         logging.basicConfig()
         self.logger = logging.getLogger("logger")
-        self.logger.setLevel(logging.DEBUG)
+        self.logger.setLevel(logging.ERROR)
 
     @staticmethod
     def parse_arguments():
