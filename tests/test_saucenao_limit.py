@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import logging
 import os
 import unittest
 import uuid
@@ -53,8 +54,12 @@ class TestSauceNaoLimits(unittest.TestCase):
         :return:
         """
         self.test_jpg = generate_small_jpg()
+
         self.saucenao_html = SauceNao(os.getcwd(), output_type=SauceNao.API_HTML_TYPE)
+        self.saucenao_html.logger.setLevel(logging.DEBUG)
         self.saucenao_json = SauceNao(os.getcwd(), output_type=SauceNao.API_JSON_TYPE)
+        self.saucenao_json.logger.setLevel(logging.DEBUG)
+
         self.tests_order = [
             self.check_response_no_api_key,
             self.check_response_api_key,
@@ -88,11 +93,13 @@ class TestSauceNaoLimits(unittest.TestCase):
 
         :return:
         """
+        self.saucenao_html.logger.info('running HTML test, assert_success=True')
         self.run_tests(saucenao=self.saucenao_html, success=True)
+        self.saucenao_json.logger.info('running JSON test, assert_success=True')
         self.run_tests(saucenao=self.saucenao_json, success=True)
 
         # now reach the daily limit
-        test_files = [self.test_jpg] * (SAUCENAO_IP_LIMIT - 2)
+        test_files = [self.test_jpg] * SAUCENAO_IP_LIMIT
         try:
             # check_files returns a generator so we have to improvise here a bit
             for _ in self.saucenao_html.check_files(test_files):
@@ -100,7 +107,9 @@ class TestSauceNaoLimits(unittest.TestCase):
         except DailyLimitReachedException:
             pass
 
+        self.saucenao_html.logger.info('running HTML test, assert_success=False')
         self.run_tests(saucenao=self.saucenao_html, success=False)
+        self.saucenao_json.logger.info('running JSON test, assert_success=False')
         self.run_tests(saucenao=self.saucenao_json, success=False)
 
     def check_response_no_api_key(self, saucenao, assert_success=True):
