@@ -140,6 +140,7 @@ class SauceNao(object):
 
     def check_file(self, file_name):
         """
+        check the given file for results on SauceNAO
 
         :param file_name:
         :return:
