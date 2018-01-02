@@ -13,7 +13,7 @@ import requests
 from bs4 import BeautifulSoup as Soup
 from bs4 import element
 
-from filehandler import FileHandler
+from .filehandler import FileHandler
 
 
 class DailyLimitReachedException(Exception):
@@ -100,17 +100,17 @@ class SauceNao(object):
             filtered_results = self.check_file(file_name)
 
             if not filtered_results:
-                self.logger.info(u'No results found for image: {0:s}'.format(file_name))
+                self.logger.info('No results found for image: {0:s}'.format(file_name))
                 continue
 
             if self.move_to_categories:
                 categories = self.get_content_value(filtered_results, self.CONTENT_CATEGORY_KEY)
 
                 if not categories:
-                    self.logger.info(u"no categories found for file: {0:s}".format(file_name))
+                    self.logger.info("no categories found for file: {0:s}".format(file_name))
                     continue
 
-                self.logger.debug(u'categories: {0:s}'.format(', '.join(categories)))
+                self.logger.debug('categories: {0:s}'.format(', '.join(categories)))
 
                 # since many pictures are tagged as original and with a proper category
                 # we remove the original category if we have more than 1 category
@@ -122,10 +122,10 @@ class SauceNao(object):
 
                 # sub categories we don't want to move like original etc
                 if category.lower() in excludes:
-                    self.logger.info(u"skipping excluded category: {0:s} ({1:s})".format(category, file_name))
+                    self.logger.info("skipping excluded category: {0:s} ({1:s})".format(category, file_name))
                     continue
 
-                self.logger.info(u"moving {0:s} to category: {1:s}".format(file_name, category))
+                self.logger.info("moving {0:s} to category: {1:s}".format(file_name, category))
                 FileHandler.move_to_category(file_name, category, base_directory=self.directory)
             else:
                 yield {
@@ -199,8 +199,8 @@ class SauceNao(object):
         link = requests.post(url=self.SEARCH_POST_URL, files=files, params=params, headers=headers)
 
         if 'Daily Search Limit Exceeded' in link.text:
-            self.logger.error(u"Daily search limit reached")
-            raise DailyLimitReachedException(u'Daily search limit reached')
+            self.logger.error("Daily search limit reached")
+            raise DailyLimitReachedException('Daily search limit reached')
 
         if output_type == self.API_HTML_TYPE:
             return self.parse_results_html_to_json(link.text)
@@ -296,7 +296,7 @@ class SauceNao(object):
         :return:
         """
         for result in results:
-            if 'content' in result['data'].keys():
+            if 'content' in list(result['data'].keys()):
                 for content in result['data']['content']:
                     if re.match('{0:s}: .*'.format(key), content):
                         return ''.join(re.split(r'{0:s}: '.format(key), content)[1:]).rstrip("\n").split('\n')
@@ -332,8 +332,8 @@ class SauceNao(object):
         else:
             length = len(additional_result)
 
-        for i in xrange(length):
-            for key in result[i].keys():
+        for i in range(length):
+            for key in list(result[i].keys()):
                 result[i][key] = self.merge_two_dicts(result[i][key], additional_result[i][key])
 
         return result

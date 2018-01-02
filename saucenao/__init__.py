@@ -3,8 +3,8 @@
 import argparse
 import logging
 
-from filehandler import FileHandler
-from saucenao import SauceNao
+from .filehandler import FileHandler
+from .saucenao import SauceNao
 
 
 def run_application():

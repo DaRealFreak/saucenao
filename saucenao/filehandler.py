@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import html
 import os
 import re
-from HTMLParser import HTMLParser
 from shutil import move
 
 
@@ -34,13 +34,13 @@ class FileHandler:
         :return:
         """
         if re.match(r'.*&#[\d]{2,6};.*', text):
-            return FileHandler.ensure_unicode(HTMLParser().unescape(text))
+            return FileHandler.ensure_unicode(html.unescape(text))
         if isinstance(text, str):
             text = text.decode('utf8')
-        return unicode(text)
+        return str(text)
 
     @staticmethod
-    def unicode_translate(text, chars=u"", replacement=u""):
+    def unicode_translate(text, chars="", replacement=""):
         """
         replacement for the string.maketrans function
 
@@ -65,7 +65,7 @@ class FileHandler:
         """
         folder = FileHandler.ensure_unicode(re.sub(r'["/?*:<>|]', r'', category))
         folder = os.path.join(base_directory, folder)
-        folder = os.path.abspath(FileHandler.unicode_translate(folder, u"\n\t\r", u"   "))
+        folder = os.path.abspath(FileHandler.unicode_translate(folder, "\n\t\r", "   "))
         if not os.path.exists(folder):
             os.makedirs(folder)
         move(os.path.join(base_directory, filename), os.path.join(folder, filename))
