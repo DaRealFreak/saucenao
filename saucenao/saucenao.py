@@ -43,7 +43,8 @@ class SauceNao(object):
     mime = None
 
     def __init__(self, directory, databases=999, minimum_similarity=65, combine_api_types=False, api_key=None,
-                 exclude_categories='', move_to_categories=False, output_type=API_HTML_TYPE, start_file=None):
+                 exclude_categories='', move_to_categories=False, output_type=API_HTML_TYPE, start_file=None,
+                 log_level=logging.ERROR):
         """
         initializing function
 
@@ -55,6 +56,7 @@ class SauceNao(object):
         :param exclude_categories:
         :param move_to_categories:
         :param start_file:
+        :param log_level:
         """
         self.directory = directory
         self.databases = databases
@@ -68,16 +70,8 @@ class SauceNao(object):
 
         self.mime = MimeTypes()
         logging.basicConfig()
-        self.logger = logging.getLogger("logger")
-        self.logger.setLevel(logging.ERROR)
-
-    @staticmethod
-    def parse_arguments():
-        """
-        parse the passed arguments
-
-        :return:
-        """
+        self.logger = logging.getLogger("saucenao_logger")
+        self.logger.setLevel(log_level)
 
     def check_files(self, files):
         """
@@ -115,6 +109,13 @@ class SauceNao(object):
                 if not categories:
                     self.logger.info(u"no categories found for file: {0:s}".format(file_name))
                     continue
+
+                self.logger.debug(u'categories: {0:s}'.format(', '.join(categories)))
+
+                # since many pictures are tagged as original and with a proper category
+                # we remove the original category if we have more than 1 category
+                if len(categories) > 1 and 'original' in categories:
+                    categories.remove('original')
 
                 # take the first category
                 category = categories[0]
@@ -297,7 +298,7 @@ class SauceNao(object):
             if 'content' in result['data'].keys():
                 for content in result['data']['content']:
                     if re.match('{0:s}: .*'.format(key), content):
-                        return ''.join(re.split(r'{0:s}: '.format(key), content)[1:]).split('\n')
+                        return ''.join(re.split(r'{0:s}: '.format(key), content)[1:]).rstrip("\n").split('\n')
         return ''
 
     @staticmethod
