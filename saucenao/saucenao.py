@@ -69,9 +69,8 @@ class SauceNao(object):
         self.start_file = start_file
 
         self.mime = MimeTypes()
-        logging.basicConfig()
+        logging.basicConfig(level=log_level)
         self.logger = logging.getLogger("saucenao_logger")
-        self.logger.setLevel(log_level)
 
     def check_files(self, files):
         """
