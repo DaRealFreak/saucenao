@@ -17,7 +17,8 @@ dotenv.load_dotenv(dotenv_path)
 SAUCENAO_MIN_WIDTH = 3
 SAUCENAO_MIN_HEIGHT = 3
 
-SAUCENAO_IP_LIMIT = 300
+SAUCENAO_IP_LIMIT_NO_API_KEY = 150
+SAUCENAO_IP_LIMIT_API_KEY = 300
 SAUCENAO_API_KEY = os.environ.get('SAUCENAO_API_KEY')
 
 
@@ -99,13 +100,15 @@ class TestSauceNaoLimits(unittest.TestCase):
         self.run_tests(saucenao=self.saucenao_json, success=True)
 
         # now reach the daily limit
-        test_files = [self.test_jpg] * SAUCENAO_IP_LIMIT
+        self.saucenao_html.api_key = SAUCENAO_API_KEY
+        test_files = [self.test_jpg] * SAUCENAO_IP_LIMIT_API_KEY
         try:
             # check_files returns a generator so we have to improvise here a bit
             for _ in self.saucenao_html.check_files(test_files):
                 pass
         except DailyLimitReachedException:
             pass
+        self.saucenao_html.api_key = None
 
         self.saucenao_html.logger.info('running HTML test, assert_success=False')
         self.run_tests(saucenao=self.saucenao_html, success=False)
