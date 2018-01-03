@@ -13,11 +13,8 @@ import requests
 from bs4 import BeautifulSoup as Soup
 from bs4 import element
 
+from .exceptions import *
 from .filehandler import FileHandler
-
-
-class DailyLimitReachedException(Exception):
-    pass
 
 
 class SauceNao(object):
@@ -197,9 +194,16 @@ class SauceNao(object):
 
         link = requests.post(url=self.SEARCH_POST_URL, files=files, params=params, headers=headers)
 
-        if 'Daily Search Limit Exceeded' in link.text:
-            self.logger.error("Daily search limit reached")
-            raise DailyLimitReachedException('Daily search limit reached')
+        if link.status_code != 200:
+            if link.status_code == 429:
+                self.logger.error("Daily search limit reached")
+                raise DailyLimitReachedException('Daily search limit reached')
+            if link.status_code == 403:
+                self.logger.error("Invalid or wrong API key")
+                raise InvalidOrWrongApiKeyException("Invalid or wrong API key")
+            else:
+                self.logger.error("Unknown status code: {0:d}".format(link.status_code))
+                raise UnknownStatusCodeException("Unknown status code: {0:d}".format(link.status_code))
 
         if output_type == self.API_HTML_TYPE:
             return self.parse_results_html_to_json(link.text)
