@@ -17,8 +17,9 @@ dotenv.load_dotenv(dotenv_path)
 SAUCENAO_MIN_WIDTH = 3
 SAUCENAO_MIN_HEIGHT = 3
 
-SAUCENAO_IP_LIMIT_NO_API_KEY = 150
-SAUCENAO_IP_LIMIT_API_KEY = 300
+SAUCENAO_IP_LIMIT_UNREGISTERED_USER = 150
+SAUCENAO_IP_LIMIT_BASIC_USER = 300
+
 SAUCENAO_API_KEY = os.environ.get('SAUCENAO_API_KEY')
 
 
@@ -111,7 +112,7 @@ class TestSauceNaoLimits(unittest.TestCase):
         if self.saucenao_html.api_key:
             self.saucenao_html.api_key = None
 
-        test_files = [self.test_jpg] * (SAUCENAO_IP_LIMIT_NO_API_KEY - 2)
+        test_files = [self.test_jpg] * (SAUCENAO_IP_LIMIT_UNREGISTERED_USER - 2)
         try:
             # check_files returns a generator so we have to improvise here a bit
             for _ in self.saucenao_html.check_files(test_files):
@@ -127,7 +128,7 @@ class TestSauceNaoLimits(unittest.TestCase):
 
         # set API key to reach the account limit
         self.saucenao_html.api_key = SAUCENAO_API_KEY
-        test_files = [self.test_jpg] * (SAUCENAO_IP_LIMIT_API_KEY - SAUCENAO_IP_LIMIT_NO_API_KEY - 4)
+        test_files = [self.test_jpg] * (SAUCENAO_IP_LIMIT_BASIC_USER - SAUCENAO_IP_LIMIT_UNREGISTERED_USER - 4)
         try:
             # check_files returns a generator so we have to improvise here a bit
             for _ in self.saucenao_html.check_files(test_files):
