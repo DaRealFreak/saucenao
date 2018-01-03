@@ -4,6 +4,9 @@ small script to work with [SauceNAO](https://www.saucenao.com) locally
 
 
 ### Installing
+This script runs with [Python 3](https://www.python.org).
+There is a currently working [Python 2 branch](https://github.com/DaRealFreak/saucenao/tree/Python-2.x), but I'm not going to update it anymore.
+
 Download this repository and run the setup.py to install all necessary dependencies
 
 ### Dependencies
