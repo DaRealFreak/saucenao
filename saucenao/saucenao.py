@@ -196,8 +196,15 @@ class SauceNao(object):
 
         if link.status_code != 200:
             if link.status_code == 429:
-                self.logger.error("Daily search limit reached")
-                raise DailyLimitReachedException('Daily search limit reached')
+                if 'limit of 150 searches' in link.text:
+                    self.logger.error("Daily search limit for unregistered users reached")
+                    raise DailyLimitReachedException('Daily search limit for unregistered users reached')
+                if 'limit of 300 searches' in link.text:
+                    self.logger.error("Daily search limit for basic users reached")
+                    raise DailyLimitReachedException('Daily search limit for basic users reached')
+                else:
+                    self.logger.error("Daily search limit reached")
+                    raise DailyLimitReachedException('Daily search limit reached')
             if link.status_code == 403:
                 self.logger.error("Invalid or wrong API key")
                 raise InvalidOrWrongApiKeyException("Invalid or wrong API key")
