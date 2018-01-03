@@ -35,8 +35,6 @@ class FileHandler:
         """
         if re.match(r'.*&#[\d]{2,6};.*', text):
             return FileHandler.ensure_unicode(html.unescape(text))
-        if isinstance(text, str):
-            text = text.decode('utf8')
         return str(text)
 
     @staticmethod
