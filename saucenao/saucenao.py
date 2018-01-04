@@ -194,28 +194,37 @@ class SauceNao(object):
 
         link = requests.post(url=self.SEARCH_POST_URL, files=files, params=params, headers=headers)
 
-        if link.status_code != 200:
-            if link.status_code == 429:
-                if 'limit of 150 searches' in link.text:
-                    self.logger.error("Daily search limit for unregistered users reached")
-                    raise DailyLimitReachedException('Daily search limit for unregistered users reached')
-                if 'limit of 300 searches' in link.text:
-                    self.logger.error("Daily search limit for basic users reached")
-                    raise DailyLimitReachedException('Daily search limit for basic users reached')
-                else:
-                    self.logger.error("Daily search limit reached")
-                    raise DailyLimitReachedException('Daily search limit reached')
-            if link.status_code == 403:
-                self.logger.error("Invalid or wrong API key")
-                raise InvalidOrWrongApiKeyException("Invalid or wrong API key")
-            else:
-                self.logger.error("Unknown status code: {0:d}".format(link.status_code))
-                raise UnknownStatusCodeException("Unknown status code: {0:d}".format(link.status_code))
+        self.verify_status_code(link)
 
         if output_type == self.API_HTML_TYPE:
             return self.parse_results_html_to_json(link.text)
 
         return link.text
+
+    def verify_status_code(self, request_response):
+        """
+        verify the status code of the post request to the search url and raise exceptions if the code is unexpected
+
+        :param request_response:
+        :return:
+        """
+        if request_response.status_code != 200:
+            if request_response.status_code == 429:
+                if 'limit of 150 searches' in request_response.text:
+                    self.logger.error("Daily search limit for unregistered users reached")
+                    raise DailyLimitReachedException('Daily search limit for unregistered users reached')
+                if 'limit of 300 searches' in request_response.text:
+                    self.logger.error("Daily search limit for basic users reached")
+                    raise DailyLimitReachedException('Daily search limit for basic users reached')
+                else:
+                    self.logger.error("Daily search limit reached")
+                    raise DailyLimitReachedException('Daily search limit reached')
+            if request_response.status_code == 403:
+                self.logger.error("Invalid or wrong API key")
+                raise InvalidOrWrongApiKeyException("Invalid or wrong API key")
+            else:
+                self.logger.error("Unknown status code: {0:d}".format(request_response.status_code))
+                raise UnknownStatusCodeException("Unknown status code: {0:d}".format(request_response.status_code))
 
     @staticmethod
     def parse_results_html_to_json(html):
