@@ -40,7 +40,7 @@ class FileHandler:
         return text
 
     @staticmethod
-    def move_to_category(filename, category, base_directory=''):
+    def move_to_category(filename, category, base_directory=os.getcwd()):
         """
         move file to the sub_category folder
 
@@ -49,7 +49,7 @@ class FileHandler:
         :param category:
         :return:
         """
-        folder = re.sub(r'["/?*:<>|]', r'', category)
+        folder = re.sub(r'["/?*:<>|]', r'', html.unescape(category))
         folder = os.path.join(base_directory, folder)
         folder = os.path.abspath(FileHandler.unicode_translate(folder, "\n\t\r", "   "))
         if not os.path.exists(folder):
