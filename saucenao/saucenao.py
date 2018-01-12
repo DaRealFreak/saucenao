@@ -36,6 +36,10 @@ class SauceNao(object):
     CONTENT_CATEGORY_KEY = 'Material'
     CONTENT_CHARACTERS_KEY = 'Characters'
 
+    STATUS_CODE_OK = 1
+    STATUS_CODE_SKIP = 2
+    STATUS_CODE_REPEAT = 3
+
     directory = None
     mime = None
 
@@ -65,6 +69,7 @@ class SauceNao(object):
         self.output_type = output_type
         self.start_file = start_file
 
+        self.previous_status_code = None
         self.mime = MimeTypes()
         logging.basicConfig(level=log_level)
         self.logger = logging.getLogger("saucenao_logger")
@@ -141,6 +146,7 @@ class SauceNao(object):
         :param file_name:
         :return:
         """
+        self.logger.info("checking file: {0:s}".format(file_name))
         if self.combine_api_types:
             result = self.check_image(file_name, self.API_HTML_TYPE)
             sorted_results = self.parse_results_json(result)
@@ -194,18 +200,28 @@ class SauceNao(object):
 
         link = requests.post(url=self.SEARCH_POST_URL, files=files, params=params, headers=headers)
 
-        self.verify_status_code(link)
+        action = self.verify_status_code(link, file_name)
+
+        if action == self.STATUS_CODE_SKIP:
+            return json.dumps({'results': []})
+        elif action == self.STATUS_CODE_REPEAT:
+            self.logger.info("Received an unexpected status code, repeating after 10 seconds...")
+            time.sleep(10)
+            return self.check_image(file_name, output_type)
+        else:
+            self.previous_status_code = None
 
         if output_type == self.API_HTML_TYPE:
             return self.parse_results_html_to_json(link.text)
 
         return link.text
 
-    def verify_status_code(self, request_response):
+    def verify_status_code(self, request_response, file_name):
         """
         verify the status code of the post request to the search url and raise exceptions if the code is unexpected
 
         :param request_response:
+        :param file_name:
         :return:
         """
         if request_response.status_code != 200:
@@ -222,9 +238,17 @@ class SauceNao(object):
             if request_response.status_code == 403:
                 self.logger.error("Invalid or wrong API key")
                 raise InvalidOrWrongApiKeyException("Invalid or wrong API key")
+            if request_response.status_code == 413:
+                self.logger.error("Payload too large, skipping file: {0:s}".format(file_name))
+                return self.STATUS_CODE_SKIP
             else:
+                if not self.previous_status_code:
+                    self.previous_status_code = request_response.status_code
+                    return self.STATUS_CODE_REPEAT
+
                 self.logger.error("Unknown status code: {0:d}".format(request_response.status_code))
                 raise UnknownStatusCodeException("Unknown status code: {0:d}".format(request_response.status_code))
+        return self.STATUS_CODE_OK
 
     @staticmethod
     def parse_results_html_to_json(html):
