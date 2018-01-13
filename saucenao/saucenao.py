@@ -6,15 +6,15 @@ import os
 import os.path
 import re
 import time
-# noinspection PyProtectedMember
 from mimetypes import MimeTypes
+from typing import Generator
 
 import requests
 from bs4 import BeautifulSoup as Soup
 from bs4 import element
 
-from .exceptions import *
-from .filehandler import FileHandler
+from saucenao.exceptions import *
+from saucenao.files.filehandler import FileHandler
 
 
 class SauceNao(object):
@@ -46,18 +46,17 @@ class SauceNao(object):
     def __init__(self, directory, databases=999, minimum_similarity=65, combine_api_types=False, api_key=None,
                  exclude_categories='', move_to_categories=False, output_type=API_HTML_TYPE, start_file=None,
                  log_level=logging.ERROR):
-        """
-        initializing function
+        """Initializing function
 
-        :param directory:
-        :param databases:
-        :param minimum_similarity:
-        :param combine_api_types:
-        :param api_key:
-        :param exclude_categories:
-        :param move_to_categories:
-        :param start_file:
-        :param log_level:
+        :type directory: str
+        :type databases: int
+        :type minimum_similarity: int
+        :type combine_api_types: bool
+        :type api_key: str
+        :type exclude_categories: str
+        :type move_to_categories: bool
+        :type start_file: str
+        :type log_level: int
         """
         self.directory = directory
         self.databases = databases
@@ -74,12 +73,10 @@ class SauceNao(object):
         logging.basicConfig(level=log_level)
         self.logger = logging.getLogger("saucenao_logger")
 
-    def check_files(self, files):
-        """
-        check all files with SauceNao and execute the specified tasks
+    def check_files(self, files) -> Generator[str, None, None]:
+        """Check all files with SauceNao and execute the specified tasks
 
-        :type files: list
-        :param files:
+        :type files: list|tuple|Generator
         :return:
         """
         if self.exclude_categories:
@@ -139,11 +136,10 @@ class SauceNao(object):
                 self.logger.debug("sleeping '{:.2f}' seconds".format((30 / self.LIMIT_30_SECONDS) - duration))
                 time.sleep((30 / self.LIMIT_30_SECONDS) - duration)
 
-    def check_file(self, file_name):
-        """
-        check the given file for results on SauceNAO
+    def check_file(self, file_name: str) -> list:
+        """Check the given file for results on SauceNAO
 
-        :param file_name:
+        :type file_name: str
         :return:
         """
         self.logger.info("checking file: {0:s}".format(file_name))
@@ -161,14 +157,11 @@ class SauceNao(object):
         filtered_results = self.filter_results(sorted_results)
         return filtered_results
 
-    def check_image(self, file_name, output_type):
-        """
-        check the possible sources for the given file
+    def check_image(self, file_name: str, output_type: int) -> str:
+        """Check the possible sources for the given file
 
         :type output_type: int
         :type file_name: str
-        :param output_type:
-        :param file_name:
         :return:
         """
         file_path = os.path.join(self.directory, file_name)
@@ -216,12 +209,11 @@ class SauceNao(object):
 
         return link.text
 
-    def verify_status_code(self, request_response, file_name):
-        """
-        verify the status code of the post request to the search url and raise exceptions if the code is unexpected
+    def verify_status_code(self, request_response: requests.Response, file_name: str) -> int:
+        """Verify the status code of the post request to the search url and raise exceptions if the code is unexpected
 
-        :param request_response:
-        :param file_name:
+        :type request_response: requests.Response
+        :type file_name: str
         :return:
         """
         if request_response.status_code != 200:
@@ -251,12 +243,10 @@ class SauceNao(object):
         return self.STATUS_CODE_OK
 
     @staticmethod
-    def parse_results_html_to_json(html):
-        """
-        parse the results and sort them descending by similarity
+    def parse_results_html_to_json(html: str) -> str:
+        """Parse the results and sort them descending by similarity
 
         :type html: str
-        :param html:
         :return:
         """
         soup = Soup(html, 'html.parser')
@@ -297,24 +287,20 @@ class SauceNao(object):
         return json.dumps(results)
 
     @staticmethod
-    def parse_results_json(text):
-        """
-        parse the results and sort them descending by similarity
+    def parse_results_json(text: str) -> list:
+        """Parse the results and sort them descending by similarity
 
         :type text: str
-        :param text:
         :return:
         """
         result = json.loads(text)
         results = [res for res in result['results']]
         return sorted(results, key=lambda k: float(k['header']['similarity']), reverse=True)
 
-    def filter_results(self, sorted_results):
-        """
-        return results with a similarity bigger or the same as the defined similarity from the arguments (default 65%)
+    def filter_results(self, sorted_results) -> list:
+        """Return results with a similarity bigger or the same as the defined similarity from the arguments (default 65%)
 
-        :type sorted_results: list
-        :param sorted_results:
+        :type sorted_results: list|tuple|Generator
         :return:
         """
         filtered_results = []
@@ -327,15 +313,12 @@ class SauceNao(object):
         return filtered_results
 
     @staticmethod
-    def get_content_value(results, key):
-        """
-        return the first match of Material in content
+    def get_content_value(results, key: str):
+        """Return the first match of Material in content
         multiple sites have a categorisation which SauceNao utilizes to provide it in the content section
 
-        :type results: list
+        :type results: list|tuple|Generator
         :type key: str
-        :param results:
-        :param key:
         :return:
         """
         for result in results:
@@ -346,28 +329,22 @@ class SauceNao(object):
         return ''
 
     @staticmethod
-    def merge_two_dicts(x, y):
-        """
-        take x dictionary and insert/overwrite y dictionary values
+    def merge_two_dicts(x: dict, y: dict) -> dict:
+        """Take x dictionary and insert/overwrite y dictionary values
 
         :type x: dict
         :type y: dict
-        :param x:
-        :param y:
         :return:
         """
         z = x.copy()
         z.update(y)
         return z
 
-    def merge_results(self, result, additional_result):
-        """
-        merge two result arrays
+    def merge_results(self, result: list, additional_result: list) -> list:
+        """Merge two result arrays
 
         :type result: list
         :type additional_result: list
-        :param result:
-        :param additional_result:
         :return:
         """
         if len(result) <= len(additional_result):

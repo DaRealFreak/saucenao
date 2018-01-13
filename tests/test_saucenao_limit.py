@@ -24,8 +24,7 @@ SAUCENAO_API_KEY = os.environ.get('SAUCENAO_API_KEY')
 
 
 def generate_small_jpg():
-    """
-    generate a rather small jpg file to upload faster(631 bytes)
+    """Generate a rather small jpg file to upload faster(631 bytes)
 
     :return:
     """
@@ -50,8 +49,7 @@ class TestSauceNaoLimits(unittest.TestCase):
     """
 
     def setUp(self):
-        """
-        constructor for the unittest
+        """Constructor for the unittest
 
         :return:
         """
@@ -74,19 +72,17 @@ class TestSauceNaoLimits(unittest.TestCase):
         ]
 
     def tearDown(self):
-        """
-        destructor for the unittest
+        """Destructor for the unittest
 
         :return:
         """
         os.remove(self.test_jpg)
 
-    def run_tests(self, saucenao, tests):
-        """
-        run the different tests with the given SauceNao instance
+    def run_tests(self, saucenao: SauceNao, tests):
+        """Run the different tests with the given SauceNao instance
 
-        :param saucenao:
-        :param tests:
+        :type saucenao: SauceNao
+        :type tests: list|tuple|Generator
         :return:
         """
         for test in tests:
@@ -98,8 +94,7 @@ class TestSauceNaoLimits(unittest.TestCase):
                 self.fail("{} failed ({}: {})".format(test, type(e), e))
 
     def test_limits(self):
-        """
-        test the limits of SauceNAO
+        """Test the limits of SauceNAO
 
         :return:
         """
@@ -142,13 +137,12 @@ class TestSauceNaoLimits(unittest.TestCase):
         self.saucenao_html.logger.info('running JSON test, ip limit reached, account limit reached')
         self.run_tests(saucenao=self.saucenao_json, tests=self.IP_LIMIT_ACCOUNT_LIMIT)
 
-    def check_response_no_api_key(self, saucenao, assert_success=True):
-        """
-        check the response without an API key
+    def check_response_no_api_key(self, saucenao: SauceNao, assert_success=True):
+        """Check the response without an API key
         on assert_success=True expect a dictionary, else an exception
 
-        :param saucenao:
-        :param assert_success:
+        :type saucenao: SauceNao
+        :type assert_success: bool
         :return:
         """
         if assert_success:
@@ -157,13 +151,12 @@ class TestSauceNaoLimits(unittest.TestCase):
         else:
             self.assertRaises(DailyLimitReachedException, saucenao.check_file, self.test_jpg)
 
-    def check_response_api_key(self, saucenao, assert_success=True):
-        """
-        check the response with an API key
+    def check_response_api_key(self, saucenao: SauceNao, assert_success=True):
+        """Check the response with an API key
         on assert_success=True expect a dictionary, else an exception
 
-        :param saucenao:
-        :param assert_success:
+        :type saucenao: SauceNao
+        :type assert_success: bool
         :return:
         """
         saucenao.api_key = SAUCENAO_API_KEY
