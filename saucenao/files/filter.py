@@ -35,6 +35,22 @@ class Filter:
         self.filter_file_type = file_type
         self.filter_file_size = size
 
+    @staticmethod
+    def _get_timestamp_from_datestring(date_string):
+        """Convert the given date string to timestamp
+
+        :param date_string:
+        :return:
+        """
+        if re.match('\d+.\d+.\d+ \d+:\d+:\d+', date_string):
+            return datetime.datetime.strptime(date_string, "%d.%m.%Y %H:%M:%S").timestamp()
+        elif re.match('\d+.\d+.\d+ \d+:\d+', date_string):
+            return datetime.datetime.strptime(date_string, "%d.%m.%Y %H:%M").timestamp()
+        elif re.match('\d+.\d+.\d+', date_string):
+            return datetime.datetime.strptime(date_string, "%d.%m.%Y").timestamp()
+        else:
+            raise AttributeError("The date doesn't fit the format: d.m.Y[ H:M[:S]]")
+
     def apply(self, file_system_objects, directory=os.getcwd()):
         """Apply the filter values to the given FSOs(File System Objects)
 
@@ -57,32 +73,16 @@ class Filter:
 
             # check if the FSO creation date matches the constraint
             if self.filter_creation_date:
-                ctime = file_stats[ST_CTIME]
-                if re.match('\d+.\d+.\d+ \d+:\d+:\d+', self.filter_creation_date.value):
-                    crtstmp = datetime.datetime.strptime(self.filter_creation_date.value,
-                                                         "%d.%m.%Y %H:%M:%S").timestamp()
-                elif re.match('\d+.\d+.\d+ \d+:\d+', self.filter_creation_date.value):
-                    crtstmp = datetime.datetime.strptime(self.filter_creation_date.value, "%d.%m.%Y %H:%M").timestamp()
-                elif re.match('\d+.\d+.\d+', self.filter_creation_date.value):
-                    crtstmp = datetime.datetime.strptime(self.filter_creation_date.value, "%d.%m.%Y").timestamp()
-                else:
-                    raise AttributeError("The creation date doesn't fit the format: d.m.Y[ H:M[:S]]")
-                if not self.filter_creation_date.cmp_func(ctime, crtstmp):
+                creation_time = file_stats[ST_CTIME]
+                expected_creation_time = self._get_timestamp_from_datestring(self.filter_creation_date.value)
+                if not self.filter_creation_date.cmp_func(creation_time, expected_creation_time):
                     continue
 
             # check if the FSO modification date matches the constraint
             if self.filter_modified_date:
-                mtime = file_stats[ST_MTIME]
-                if re.match('\d+.\d+.\d+ \d+:\d+:\d+', self.filter_modified_date.value):
-                    mtstmp = datetime.datetime.strptime(self.filter_modified_date.value,
-                                                        "%d.%m.%Y %H:%M:%S").timestamp()
-                elif re.match('\d+.\d+.\d+ \d+:\d+', self.filter_modified_date.value):
-                    mtstmp = datetime.datetime.strptime(self.filter_modified_date.value, "%d.%m.%Y %H:%M").timestamp()
-                elif re.match('\d+.\d+.\d+', self.filter_modified_date.value):
-                    mtstmp = datetime.datetime.strptime(self.filter_modified_date.value, "%d.%m.%Y").timestamp()
-                else:
-                    raise AttributeError("The creation date doesn't fit the format: d.m.Y[ H:M[:S]]")
-                if not self.filter_modified_date.cmp_func(mtime, mtstmp):
+                modified_time = file_stats[ST_MTIME]
+                expected_modified_time = self._get_timestamp_from_datestring(self.filter_modified_date.value)
+                if not self.filter_modified_date.cmp_func(modified_time, expected_modified_time):
                     continue
 
             # check if the FSO name matches the constraint
