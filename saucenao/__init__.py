@@ -17,7 +17,7 @@ def run_application():
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--dir', help='directory to sort', required=True)
     parser.add_argument('-db', '--databases', default=999, type=int, help='which databases should be searched')
-    parser.add_argument('-min', '--minimum_similarity', default=65, type=float,
+    parser.add_argument('-min', '--minimum-similarity', default=65, type=float,
                         help='minimum similarity percentage')
     parser.add_argument('-c', '--combine-api-types', action='store_true',
                         help='combine html and json api response to retrieve more information')
@@ -37,6 +37,9 @@ def run_application():
                         help='filters files for modified after given date. '
                              'Format of date has to match "d.m.Y[ H:M[:S]]"')
 
+    parser.add_argument('-tmin', '--title-minimum-similarity', default=95, type=float,
+                        help='minimum similarity percentage for title search with BakaUpdates')
+
     args = parser.parse_args()
 
     file_filter = Filter(assert_is_file=True)
@@ -51,5 +54,6 @@ def run_application():
     sauce_nao = SauceNao(args.dir, databases=args.databases, minimum_similarity=args.minimum_similarity,
                          combine_api_types=args.combine_api_types, api_key=args.api_key,
                          exclude_categories=args.exclude_categories, move_to_categories=args.move_to_categories,
-                         start_file=args.start_file, log_level=args.log_level)
+                         start_file=args.start_file, log_level=args.log_level,
+                         title_minimum_similarity=args.title_minimum_similarity)
     return sauce_nao.check_files(files)

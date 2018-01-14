@@ -13,6 +13,11 @@ import requests
 from bs4 import BeautifulSoup as Soup
 from bs4 import element
 
+try:
+    from bakaupdates import BakaUpdates
+except ImportError:
+    BakaUpdates = None
+
 from saucenao.exceptions import *
 from saucenao.files.filehandler import FileHandler
 
@@ -45,18 +50,19 @@ class SauceNao(object):
 
     def __init__(self, directory, databases=999, minimum_similarity=65, combine_api_types=False, api_key=None,
                  exclude_categories='', move_to_categories=False, output_type=API_HTML_TYPE, start_file=None,
-                 log_level=logging.ERROR):
+                 log_level=logging.ERROR, title_minimum_similarity=90):
         """Initializing function
 
         :type directory: str
         :type databases: int
-        :type minimum_similarity: int
+        :type minimum_similarity: float
         :type combine_api_types: bool
         :type api_key: str
         :type exclude_categories: str
         :type move_to_categories: bool
         :type start_file: str
         :type log_level: int
+        :type title_minimum_similarity: float
         """
         self.directory = directory
         self.databases = databases
@@ -67,6 +73,7 @@ class SauceNao(object):
         self.move_to_categories = move_to_categories
         self.output_type = output_type
         self.start_file = start_file
+        self.title_minimum_similarity = title_minimum_similarity
 
         self.previous_status_code = None
         self.mime = MimeTypes()
@@ -117,6 +124,13 @@ class SauceNao(object):
 
                 # take the first category
                 category = categories[0]
+
+                if BakaUpdates:
+                    similar_titles = BakaUpdates.get_similar_titles(category)
+                    if similar_titles and similar_titles[0]['similarity'] * 100 >= self.title_minimum_similarity:
+                        category = similar_titles[0]['title']
+                        self.logger.info("Similar title found: %s, %s (%.2f)" %
+                                         (category, similar_titles[0]['title'], similar_titles[0]['similarity'] * 100))
 
                 # sub categories we don't want to move like original etc
                 if category.lower() in excludes:
