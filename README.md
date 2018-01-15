@@ -26,13 +26,17 @@ Optional:
 ### Usage
 You can run SauceNAO either as module:
 ```
+import logging
 from saucenao.saucenao import SauceNao
-saucenao = SauceNao('test_directory', api_key='your_api_key')
+
+saucenao = SauceNao('directory', databases=999, minimum_similarity=65, combine_api_types=False, api_key=None,
+                 exclude_categories='', move_to_categories=False, output_type=API_HTML_TYPE, start_file=None,
+                 log_level=logging.ERROR, title_minimum_similarity=90)
 ```
 
 or as application:
 ```
-python usage.py --dir 'test_directory' --api-key='your_api_key'
+python usage.py --dir [--databases] [--minimum-similarity] [--combine-api-types] [--api-key] [--exclude-categories] [--move-to-categories] [--output-type] [--start-file] [--log-level] [--filter-creation-date] [--filter-modified-date] [--title-minimum-similarity]
 ```
 
 you can also use it to get the gathered information for your own script:
