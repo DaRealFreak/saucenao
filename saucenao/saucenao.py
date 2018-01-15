@@ -131,7 +131,7 @@ class SauceNao(object):
                     if similar_titles and similar_titles[0]['similarity'] * 100 >= self.title_minimum_similarity:
                         category = similar_titles[0]['title']
                         self.logger.info(
-                            "Similar title found: {0:s}, {1:s} ({2:.2f%})".format(
+                            "Similar title found: {0:s}, {1:s} ({2:.2f}%)".format(
                                 category, similar_titles[0]['title'], similar_titles[0]['similarity'] * 100))
 
                 # sub categories we don't want to move like original etc
