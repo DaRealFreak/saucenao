@@ -19,7 +19,7 @@ class FileHandler:
         :return:
         """
         if file_filter:
-            for f in file_filter.apply(os.listdir(directory), directory):
+            for f in file_filter.apply(directory=directory):
                 yield f
         else:
             for f in os.listdir(directory):

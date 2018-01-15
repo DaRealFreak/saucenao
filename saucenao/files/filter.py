@@ -17,10 +17,11 @@ class Filter:
     Returns a generator object
     """
 
-    def __init__(self, assert_is_file=False, creation_date=None, modified_date=None, name=None, file_type=None,
-                 size=None):
+    def __init__(self, assert_is_folder=False, assert_is_file=False, creation_date=None, modified_date=None, name=None,
+                 file_type=None, size=None):
         """Initializing function
 
+        :type assert_is_folder: bool
         :type assert_is_file: bool
         :type creation_date: Constraint
         :type modified_date: Constraint
@@ -28,6 +29,7 @@ class Filter:
         :type file_type: Constraint
         :type size: Constraint
         """
+        self.filter_assert_is_folder = assert_is_folder
         self.filter_assert_is_file = assert_is_file
         self.filter_creation_date = creation_date
         self.filter_modified_date = modified_date
@@ -51,13 +53,19 @@ class Filter:
         else:
             raise AttributeError("The date doesn't fit the format: d.m.Y[ H:M[:S]]")
 
-    def apply(self, file_system_objects, directory=os.getcwd()):
+    def apply(self, directory='', file_system_objects=None):
         """Apply the filter values to the given FSOs(File System Objects)
 
-        :type file_system_objects: list|tuple|Generator
         :type directory: str
+        :type file_system_objects: list|tuple|Generator
         :return:
         """
+        if file_system_objects is None:
+            if directory:
+                file_system_objects = os.listdir(directory)
+            else:
+                file_system_objects = []
+
         for file_system_object in file_system_objects:
             abs_path = os.path.join(directory, file_system_object)
 
@@ -67,6 +75,10 @@ class Filter:
 
             # check if the FSO is a file
             if self.filter_assert_is_file and not os.path.isfile(abs_path):
+                continue
+
+            # check if the FSO is a folder
+            if self.filter_assert_is_folder and not os.path.isdir(abs_path):
                 continue
 
             file_stats = os.stat(abs_path)
@@ -87,17 +99,17 @@ class Filter:
 
             # check if the FSO name matches the constraint
             if self.filter_name:
-                if not self.filter_name.cmp_func(self.filter_name.value, file_system_object):
+                if not self.filter_name.cmp_func(file_system_object, self.filter_name.value):
                     continue
 
             # check if the FSO suffix matches the constraint
             if self.filter_file_type:
-                if not self.filter_file_type.cmp_func(self.filter_file_type.value, Path(abs_path).suffix):
+                if not self.filter_file_type.cmp_func(Path(abs_path).suffix, self.filter_file_type.value):
                     continue
 
             # check if the FSO size matches the constraint
             if self.filter_file_size:
-                if not self.filter_file_size.cmp_func(self.filter_file_size.value, file_stats[ST_SIZE]):
+                if not self.filter_file_size.cmp_func(file_stats[ST_SIZE], self.filter_file_size.value):
                     continue
 
             yield file_system_object
