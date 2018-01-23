@@ -29,9 +29,10 @@ You can run SauceNAO either as module:
 import logging
 from saucenao.saucenao import SauceNao
 
-saucenao = SauceNao('directory', databases=999, minimum_similarity=65, combine_api_types=False, api_key=None,
-                 exclude_categories='', move_to_categories=False, output_type=API_HTML_TYPE, start_file=None,
-                 log_level=logging.ERROR, title_minimum_similarity=90)
+saucenao = SauceNao('directory', databases=999, minimum_similarity=65, combine_api_types=False, api_key='',
+                    exclude_categories='', move_to_categories=False, output_type=SauceNao.API_HTML_TYPE, start_file='',
+                    log_level=logging.ERROR, title_minimum_similarity=90)
+
 ```
 
 or as application:
