@@ -1,23 +1,34 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import os
+
 from setuptools import setup, find_packages
 
-setup(name='SauceNAO',
-      version='0.0.1',
-      description='Small module to work with SauceNAO locally',
-      url='https://github.com/DaRealFreak/saucenao',
-      author='DaRealFreak',
-      author_email='steffen.keuper@web.de',
-      license='MIT',
+current_directory = os.path.abspath(os.path.dirname(__file__))
+
+about = {}
+with open(os.path.join(current_directory, 'saucenao', '__version__.py'), 'r') as f:
+    exec(f.read(), about)
+
+setup(name=about['__title__'],
+      version=about['__version__'],
+      description=about['__description__'],
+      url=about['__url__'],
+      author=about['__author__'],
+      author_email=about['__author_email__'],
+      license=about['__license__'],
       packages=find_packages(),
       install_requires=[
-          'bs4',
-          'requests'
+          'bs4>=0.0.1',
+          'requests>=2.18.4'
       ],
       extras_require={
           'unittests': [
-              'python-dotenv',
-              'Pillow'
+              'python-dotenv>=0.7.1',
+              'Pillow>=5.0.0'
+          ],
+          'titlesearch': [
+              'titlesearch>=0.0.1'
           ]
       },
       zip_safe=True)
