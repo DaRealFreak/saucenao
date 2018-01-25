@@ -249,3 +249,8 @@ class TestFilesFilter(unittest.TestCase):
         """
         dir_path = os.path.join(self.dir, str(uuid.uuid4()))
         os.mkdir(dir_path)
+
+
+if __name__ == '__main__':
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestFilesFilter)
+    unittest.TextTestRunner(verbosity=2).run(suite)

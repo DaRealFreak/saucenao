@@ -72,3 +72,8 @@ class TestConstraint(unittest.TestCase):
         self.assertEqual(Constraint.cmp_value_not_equals(1, 2), True)
         self.assertEqual(Constraint.cmp_value_not_equals(2, 2), False)
         self.assertEqual(Constraint.cmp_value_not_equals(2, 1), True)
+
+
+if __name__ == '__main__':
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestConstraint)
+    unittest.TextTestRunner(verbosity=2).run(suite)
