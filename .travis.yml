@@ -15,7 +15,7 @@ install:
 
 script:
   - python tests/coverage.py
-  - coverage run tests/coverage.py
+  - coverage run --include tests/coverage.py
 
 after_success:
   - coveralls
