@@ -112,7 +112,7 @@ class TestFilesFilter(unittest.TestCase):
         file_filter = Filter(
             modified_date=Constraint(date_string, cmp_func=Constraint.cmp_value_bigger_or_equal))
         files = file_filter.apply(directory=self.dir)
-        self.assertEqual(len(files), 4)
+        self.assertEqual(len(list(files)), 4)
 
     def test_modified_file(self):
         """Test for modified file
