@@ -1,5 +1,8 @@
 # SauceNAO
 
+[![Build Status](https://travis-ci.org/DaRealFreak/saucenao.svg?branch=master)](https://travis-ci.org/DaRealFreak/saucenao)
+[![codecov](https://codecov.io/gh/DaRealFreak/saucenao/branch/master/graph/badge.svg)](https://codecov.io/gh/DaRealFreak/saucenao)
+
 small script to work with [SauceNAO](https://www.saucenao.com) locally
 
 
