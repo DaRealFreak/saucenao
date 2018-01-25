@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import datetime
+import math
 import os
 import re
 import shutil
@@ -171,9 +172,9 @@ class TestFilesFilter(unittest.TestCase):
 
         :return:
         """
-        self.assertEqual(Filter._get_timestamp_from_datestring("01.01.2017 12:45:45"), 1483271145.0)
-        self.assertEqual(Filter._get_timestamp_from_datestring("01.01.2017 12:45"), 1483271100.0)
-        self.assertEqual(Filter._get_timestamp_from_datestring("01.01.2017"), 1483225200.0)
+        self.assertEqual(math.isclose(Filter._get_timestamp_from_datestring("01.01.2017 12:45:45"), 1483271145.0), True)
+        self.assertEqual(math.isclose(Filter._get_timestamp_from_datestring("01.01.2017 12:45"), 1483271100.0), True)
+        self.assertEqual(math.isclose(Filter._get_timestamp_from_datestring("01.01.2017"), 1483225200.0), True)
         self.assertRaises(ValueError, Filter._get_timestamp_from_datestring, "01-01-2017 00:00:00")
 
     def create_big_file(self):
