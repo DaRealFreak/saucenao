@@ -65,8 +65,3 @@ class TestFileHandler(unittest.TestCase):
 
         new_files = FileHandler.get_files(directory=self.dir)
         self.assertEqual(len(list(new_files)), 0)
-
-
-if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestFileHandler)
-    unittest.TextTestRunner(verbosity=2).run(suite)
