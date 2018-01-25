@@ -11,10 +11,11 @@ python:
 install:
   - pip install .
   - pip install .[unittests]
-  - pip install codecov
+  - pip install coveralls
 
 script:
+  - python tests/coverage.py
   - coverage run tests/coverage.py
 
 after_success:
-  - codecov
+  - coveralls
