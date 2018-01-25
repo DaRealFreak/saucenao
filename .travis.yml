@@ -14,7 +14,9 @@ install:
   - pip install codecov
 
 script:
-  - coverage run tests/test_files_filter.py
+  - coverage run tests/files/test_constraint.py
+  - coverage run tests/files/test_filehandler.py
+  - coverage run tests/files/test_filter.py
 
 after_success:
   - codecov
