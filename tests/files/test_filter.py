@@ -172,9 +172,10 @@ class TestFilesFilter(unittest.TestCase):
 
         :return:
         """
-        self.assertEqual(math.isclose(Filter._get_timestamp_from_datestring("01.01.2017 12:45:45"), 1483271145.0), True)
-        self.assertEqual(math.isclose(Filter._get_timestamp_from_datestring("01.01.2017 12:45"), 1483271100.0), True)
-        self.assertEqual(math.isclose(Filter._get_timestamp_from_datestring("01.01.2017"), 1483225200.0), True)
+        # since I don't like timezones in programming, I'll just expect a returned floating type value
+        self.assertIsInstance(Filter._get_timestamp_from_datestring("01.01.2017 12:45:45"), float)
+        self.assertIsInstance(Filter._get_timestamp_from_datestring("01.01.2017 12:45"), float)
+        self.assertIsInstance(Filter._get_timestamp_from_datestring("01.01.2017"), float)
         self.assertRaises(ValueError, Filter._get_timestamp_from_datestring, "01-01-2017 00:00:00")
 
     def create_big_file(self):
