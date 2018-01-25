@@ -80,10 +80,39 @@ class TestFilesFilter(unittest.TestCase):
 
         # check if we have more than just 1 file in the directory
         self.assertTrue(len(os.listdir(self.dir)) > 1)
-        # filter now for files >= 1024 bytes
+        # set regular expression constraint
         file_filter = Filter(name=Constraint(re.compile('named*'), cmp_func=test_cmp))
         files = file_filter.apply(directory=self.dir)
         self.assertEqual(len(list(files)), 1)
+
+    def test_extension_file(self):
+        """Test filter for file extension
+
+        :return:
+        """
+
+        def test_cmp(value, expected_value):
+            return value in expected_value
+
+        # we named our named file: named_file.jpg
+        file_filter = Filter(file_type=Constraint([".png"], cmp_func=test_cmp))
+        files = file_filter.apply(directory=self.dir)
+        self.assertEqual(len(list(files)), 0)
+
+        file_filter = Filter(file_type=Constraint([".jpg", ".png"], cmp_func=test_cmp))
+        files = file_filter.apply(directory=self.dir)
+        self.assertEqual(len(list(files)), 1)
+
+    def test_created_file(self):
+        """Test for filtering after creation date
+
+        :return:
+        """
+        date_string = datetime.datetime.fromtimestamp(self.time_modifying).strftime('%d.%m.%Y %H:%M')
+        file_filter = Filter(
+            modified_date=Constraint(date_string, cmp_func=Constraint.cmp_value_bigger_or_equal))
+        files = file_filter.apply(directory=self.dir)
+        self.assertEqual(len(files), 4)
 
     def test_modified_file(self):
         """Test for modified file
@@ -119,6 +148,65 @@ class TestFilesFilter(unittest.TestCase):
         files = file_filter.apply(directory=self.dir)
         self.assertEqual(len(list(files)), 1)
 
+    def test_non_existent_path(self):
+        """Test filter for removing non existent files
+
+        :return:
+        """
+        file_filter = Filter()
+        files = list(file_filter.apply(directory=self.dir, file_system_objects=['not-existent-file']))
+        self.assertEqual(files, [])
+
+    def test_empty_filter(self):
+        """Test empty filter
+
+        :return:
+        """
+        file_filter = Filter()
+        files = list(file_filter.apply())
+        self.assertEqual(files, [])
+
+    def test_modified_file_dateformat(self):
+        """Test for date formats in filter
+
+        :return:
+        """
+        date_string_hms = datetime.datetime.fromtimestamp(self.time_modifying).strftime('%d.%m.%Y %H:%M:%S')
+        date_string_hm = datetime.datetime.fromtimestamp(self.time_modifying).strftime('%d.%m.%Y %H:%M')
+        date_string = datetime.datetime.fromtimestamp(self.time_modifying).strftime('%d.%m.%Y')
+
+        file_filter = Filter(
+            modified_date=Constraint(date_string_hms, cmp_func=Constraint.cmp_value_smaller_or_equal)
+        )
+        files = file_filter.apply(directory=self.dir)
+        self.assertEqual(len(list(files)), 3)
+
+        file_filter = Filter(
+            modified_date=Constraint(date_string_hm, cmp_func=Constraint.cmp_value_smaller_or_equal)
+        )
+        files = file_filter.apply(directory=self.dir)
+
+        # in the case of getting the time h:m:00 we compare them
+        if not date_string_hms.endswith("00"):
+            self.assertEqual(len(list(files)), 0)
+        else:
+            self.assertEqual(len(list(files)), 3)
+
+        file_filter = Filter(
+            modified_date=Constraint(date_string, cmp_func=Constraint.cmp_value_smaller_or_equal)
+        )
+        files = file_filter.apply(directory=self.dir)
+
+        if not date_string_hms.endswith("00:00"):
+            self.assertEqual(len(list(files)), 0)
+        else:
+            self.assertEqual(len(list(files)), 3)
+
+        with self.assertRaises(ValueError):
+            list(Filter(
+                modified_date=Constraint("01-01-2017 00:00:00", cmp_func=Constraint.cmp_value_smaller_or_equal)
+            ).apply(directory=self.dir))
+
     def create_big_file(self):
         """Create a file with a fixed size
 
@@ -134,7 +222,7 @@ class TestFilesFilter(unittest.TestCase):
 
         :return:
         """
-        file_name = os.path.join(self.dir, 'named_file')
+        file_name = os.path.join(self.dir, 'named_file.jpg')
         with open(file_name, "wb") as _:
             pass
 
@@ -161,7 +249,3 @@ class TestFilesFilter(unittest.TestCase):
         """
         dir_path = os.path.join(self.dir, str(uuid.uuid4()))
         os.mkdir(dir_path)
-
-
-suite = unittest.TestLoader().loadTestsFromTestCase(TestFilesFilter)
-unittest.TextTestRunner(verbosity=2).run(suite)

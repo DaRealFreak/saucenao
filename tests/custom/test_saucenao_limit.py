@@ -11,7 +11,7 @@ from PIL import Image
 from saucenao.saucenao import DailyLimitReachedException
 from saucenao.saucenao import SauceNao
 
-dotenv_path = os.path.join(os.path.dirname(__file__), os.pardir, '.env')
+dotenv_path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, '.env')
 dotenv.load_dotenv(dotenv_path)
 
 SAUCENAO_MIN_WIDTH = 3
