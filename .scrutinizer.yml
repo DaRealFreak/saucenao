@@ -1,0 +1,12 @@
+# scrutinizer-ci.com configuration
+imports:
+    - python
+
+checks:
+    python:
+        code_rating: true
+        duplicate_code: true
+
+before_commands:
+    - pip install .
+    - pip install .[unittests]
