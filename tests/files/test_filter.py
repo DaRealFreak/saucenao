@@ -103,14 +103,14 @@ class TestFilesFilter(unittest.TestCase):
         files = file_filter.apply(directory=self.dir)
         self.assertEqual(len(list(files)), 1)
 
-    def test_created_file(self):
+    def test_creation_date(self):
         """Test for filtering after creation date
 
         :return:
         """
         date_string = datetime.datetime.fromtimestamp(self.time_modifying).strftime('%d.%m.%Y %H:%M')
         file_filter = Filter(
-            modified_date=Constraint(date_string, cmp_func=Constraint.cmp_value_bigger_or_equal))
+            creation_date=Constraint(date_string, cmp_func=Constraint.cmp_value_bigger_or_equal))
         files = file_filter.apply(directory=self.dir)
         self.assertEqual(len(list(files)), 4)
 
@@ -166,46 +166,15 @@ class TestFilesFilter(unittest.TestCase):
         files = list(file_filter.apply())
         self.assertEqual(files, [])
 
-    def test_modified_file_dateformat(self):
-        """Test for date formats in filter
+    def test_get_timestamp_from_datestring(self):
+        """Test for date string to timestamp conversion
 
         :return:
         """
-        date_string_hms = datetime.datetime.fromtimestamp(self.time_modifying).strftime('%d.%m.%Y %H:%M:%S')
-        date_string_hm = datetime.datetime.fromtimestamp(self.time_modifying).strftime('%d.%m.%Y %H:%M')
-        date_string = datetime.datetime.fromtimestamp(self.time_modifying).strftime('%d.%m.%Y')
-
-        file_filter = Filter(
-            modified_date=Constraint(date_string_hms, cmp_func=Constraint.cmp_value_smaller_or_equal)
-        )
-        files = file_filter.apply(directory=self.dir)
-        self.assertEqual(len(list(files)), 3)
-
-        file_filter = Filter(
-            modified_date=Constraint(date_string_hm, cmp_func=Constraint.cmp_value_smaller_or_equal)
-        )
-        files = file_filter.apply(directory=self.dir)
-
-        # in the case of getting the time h:m:00 we compare them
-        if not date_string_hms.endswith("00"):
-            self.assertEqual(len(list(files)), 0)
-        else:
-            self.assertEqual(len(list(files)), 3)
-
-        file_filter = Filter(
-            modified_date=Constraint(date_string, cmp_func=Constraint.cmp_value_smaller_or_equal)
-        )
-        files = file_filter.apply(directory=self.dir)
-
-        if not date_string_hms.endswith("00:00"):
-            self.assertEqual(len(list(files)), 0)
-        else:
-            self.assertEqual(len(list(files)), 3)
-
-        with self.assertRaises(ValueError):
-            list(Filter(
-                modified_date=Constraint("01-01-2017 00:00:00", cmp_func=Constraint.cmp_value_smaller_or_equal)
-            ).apply(directory=self.dir))
+        self.assertEqual(Filter._get_timestamp_from_datestring("01.01.2017 12:45:45"), 1483271145.0)
+        self.assertEqual(Filter._get_timestamp_from_datestring("01.01.2017 12:45"), 1483271100.0)
+        self.assertEqual(Filter._get_timestamp_from_datestring("01.01.2017"), 1483225200.0)
+        self.assertRaises(ValueError, Filter._get_timestamp_from_datestring, "01-01-2017 00:00:00")
 
     def create_big_file(self):
         """Create a file with a fixed size
