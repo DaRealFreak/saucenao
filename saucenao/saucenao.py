@@ -14,9 +14,9 @@ from bs4 import BeautifulSoup as Soup
 from bs4 import element
 
 try:
-    from bakaupdates import BakaUpdates
+    from titlesearch import get_similar_titles
 except ImportError:
-    BakaUpdates = None
+    get_similar_titles = None
 
 from saucenao.exceptions import *
 from saucenao.files.filehandler import FileHandler
@@ -125,8 +125,8 @@ class SauceNao(object):
                 # take the first category
                 category = categories[0]
 
-                if BakaUpdates:
-                    similar_titles = BakaUpdates.get_similar_titles(category)
+                if get_similar_titles:
+                    similar_titles = get_similar_titles(category)
 
                     if similar_titles and similar_titles[0]['similarity'] * 100 >= self.title_minimum_similarity:
                         self.logger.info(
