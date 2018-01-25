@@ -232,31 +232,32 @@ class SauceNao(object):
         :type file_name: str
         :return:
         """
-        if request_response.status_code != 200:
-            if request_response.status_code == 429:
-                if 'limit of 150 searches' in request_response.text:
-                    self.logger.error("Daily search limit for unregistered users reached")
-                    raise DailyLimitReachedException('Daily search limit for unregistered users reached')
-                if 'limit of 300 searches' in request_response.text:
-                    self.logger.error("Daily search limit for basic users reached")
-                    raise DailyLimitReachedException('Daily search limit for basic users reached')
-                else:
-                    self.logger.error("Daily search limit reached")
-                    raise DailyLimitReachedException('Daily search limit reached')
-            if request_response.status_code == 403:
-                self.logger.error("Invalid or wrong API key")
-                raise InvalidOrWrongApiKeyException("Invalid or wrong API key")
-            if request_response.status_code == 413:
-                self.logger.error("Payload too large, skipping file: {0:s}".format(file_name))
-                return self.STATUS_CODE_SKIP
-            else:
-                if not self.previous_status_code:
-                    self.previous_status_code = request_response.status_code
-                    return self.STATUS_CODE_REPEAT
+        if request_response.status_code == 200:
+            return self.STATUS_CODE_OK
 
-                self.logger.error("Unknown status code: {0:d}".format(request_response.status_code))
-                raise UnknownStatusCodeException("Unknown status code: {0:d}".format(request_response.status_code))
-        return self.STATUS_CODE_OK
+        elif request_response.status_code == 429:
+            if 'limit of 150 searches' in request_response.text:
+                self.logger.error("Daily search limit for unregistered users reached")
+                raise DailyLimitReachedException('Daily search limit for unregistered users reached')
+            elif 'limit of 300 searches' in request_response.text:
+                self.logger.error("Daily search limit for basic users reached")
+                raise DailyLimitReachedException('Daily search limit for basic users reached')
+            else:
+                self.logger.error("Daily search limit reached")
+                raise DailyLimitReachedException('Daily search limit reached')
+        elif request_response.status_code == 403:
+            self.logger.error("Invalid or wrong API key")
+            raise InvalidOrWrongApiKeyException("Invalid or wrong API key")
+        elif request_response.status_code == 413:
+            self.logger.error("Payload too large, skipping file: {0:s}".format(file_name))
+            return self.STATUS_CODE_SKIP
+        else:
+            if not self.previous_status_code:
+                self.previous_status_code = request_response.status_code
+                return self.STATUS_CODE_REPEAT
+
+            self.logger.error("Unknown status code: {0:d}".format(request_response.status_code))
+            raise UnknownStatusCodeException("Unknown status code: {0:d}".format(request_response.status_code))
 
     @staticmethod
     def parse_results_html_to_json(html: str) -> str:
