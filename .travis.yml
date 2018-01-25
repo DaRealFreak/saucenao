@@ -1,0 +1,21 @@
+language: python
+sudo: false
+
+python:
+  - "3.4"
+  - "3.5"
+  - "3.6"
+  # PyPy versions
+  - "pypy3"  # Pypy3 5.8.0-beta0
+
+# command to install dependencies
+install:
+  - pip install .
+  - pip install .[unittests]
+  - pip install codecov
+
+script:
+  - coverage run tests/test_files_filter.py
+
+after_success:
+  - codecov
