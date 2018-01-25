@@ -2,8 +2,8 @@
 # coding: utf-8
 import unittest
 
-from tests.files import TestConstraint, TestFileHandler, TestFilesFilter
+from tests.files import __all__
 
-for test_case in (TestConstraint, TestFileHandler, TestFilesFilter):
+for test_case in __all__:
     suite = unittest.TestLoader().loadTestsFromTestCase(test_case)
     unittest.TextTestRunner(verbosity=2).run(suite)
