@@ -114,6 +114,10 @@ class TestFilesFilter(unittest.TestCase):
             creation_date=Constraint(date_string, cmp_func=Constraint.cmp_value_bigger_or_equal))
         files = file_filter.apply(directory=self.dir)
         self.assertEqual(len(list(files)), 4)
+        file_filter = Filter(
+            creation_date=Constraint(date_string, cmp_func=Constraint.cmp_value_smaller))
+        files = file_filter.apply(directory=self.dir)
+        self.assertEqual(len(list(files)), 0)
 
     def test_modified_file(self):
         """Test for modified file
@@ -176,7 +180,8 @@ class TestFilesFilter(unittest.TestCase):
         self.assertIsInstance(Filter._get_timestamp_from_datestring("01.01.2017 12:45:45"), float)
         self.assertIsInstance(Filter._get_timestamp_from_datestring("01.01.2017 12:45"), float)
         self.assertIsInstance(Filter._get_timestamp_from_datestring("01.01.2017"), float)
-        self.assertRaises(ValueError, Filter._get_timestamp_from_datestring, "01-01-2017 00:00:00")
+        with self.assertRaises(AttributeError) as _:
+            Filter._get_timestamp_from_datestring("this is no time string")
 
     def create_big_file(self):
         """Create a file with a fixed size
