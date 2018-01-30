@@ -47,11 +47,11 @@ def run_application():
 
     file_filter = Filter(assert_is_file=True)
     if args.filter_creation_date:
-        file_filter.filter_creation_date = Constraint(value=args.filter_creation_date,
-                                                      cmp_func=Constraint.cmp_value_bigger_or_equal)
+        file_filter._filter_creation_date = Constraint(value=args.filter_creation_date,
+                                                       cmp_func=Constraint.cmp_value_bigger_or_equal)
     if args.filter_modified_date:
-        file_filter.filter_modified_date = Constraint(value=args.filter_modified_date,
-                                                      cmp_func=Constraint.cmp_value_bigger_or_equal)
+        file_filter._filter_modified_date = Constraint(value=args.filter_modified_date,
+                                                       cmp_func=Constraint.cmp_value_bigger_or_equal)
     files = FileHandler.get_files(args.dir, file_filter)
 
     saucenao_worker = Worker(files=files, directory=args.dir, databases=args.databases,
