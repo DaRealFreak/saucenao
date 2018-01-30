@@ -4,6 +4,10 @@
 imports:
     - python
 
+build:
+    environment:
+        python: 3.6.3
+
 checks:
     python:
         duplicate_code: true
