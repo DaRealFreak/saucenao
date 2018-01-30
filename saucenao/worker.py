@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 import time
 
-from titlesearch import get_similar_titles
+try:
+    from titlesearch import get_similar_titles
+except ImportError:
+    get_similar_titles = None
 
 from saucenao import SauceNao, FileHandler
 

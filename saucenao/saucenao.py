@@ -14,12 +14,6 @@ from bs4 import BeautifulSoup as Soup
 from bs4 import element
 
 from saucenao import http
-
-try:
-    from titlesearch import get_similar_titles
-except ImportError:
-    get_similar_titles = None
-
 from saucenao.exceptions import *
 
 
