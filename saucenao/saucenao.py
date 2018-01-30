@@ -13,13 +13,14 @@ import requests
 from bs4 import BeautifulSoup as Soup
 from bs4 import element
 
+from saucenao import http
+
 try:
     from titlesearch import get_similar_titles
 except ImportError:
     get_similar_titles = None
 
 from saucenao.exceptions import *
-from saucenao.files.filehandler import FileHandler
 
 
 class SauceNao(object):
@@ -41,12 +42,8 @@ class SauceNao(object):
     CONTENT_CATEGORY_KEY = 'Material'
     CONTENT_CHARACTERS_KEY = 'Characters'
 
-    STATUS_CODE_OK = 1
-    STATUS_CODE_SKIP = 2
-    STATUS_CODE_REPEAT = 3
-
-    directory = None
     mime = None
+    logger = None
 
     def __init__(self, directory, databases=999, minimum_similarity=65, combine_api_types=False, api_key=None,
                  exclude_categories='', move_to_categories=False, output_type=API_HTML_TYPE, start_file=None,
@@ -64,93 +61,22 @@ class SauceNao(object):
         :type log_level: int
         :type title_minimum_similarity: float
         """
-        self.directory = directory
-        self.databases = databases
-        self.minimum_similarity = minimum_similarity
-        self.combine_api_types = combine_api_types
-        self.api_key = api_key
-        self.exclude_categories = exclude_categories
-        self.move_to_categories = move_to_categories
-        self.output_type = output_type
-        self.start_file = start_file
-        self.title_minimum_similarity = title_minimum_similarity
+        self._directory = directory
+        self._databases = databases
+        self._minimum_similarity = minimum_similarity
+        self._combine_api_types = combine_api_types
+        self._api_key = api_key
+        self._exclude_categories = exclude_categories
+        self._move_to_categories = move_to_categories
+        self._output_type = output_type
+        self._start_file = start_file
+        self._title_minimum_similarity = title_minimum_similarity
 
-        self.previous_status_code = None
+        self._previous_status_code = None
+
         self.mime = MimeTypes()
         logging.basicConfig(level=log_level)
         self.logger = logging.getLogger("saucenao_logger")
-
-    def check_files(self, files) -> Generator[str, None, None]:
-        """Check all files with SauceNao and execute the specified tasks
-
-        :type files: list|tuple|Generator
-        :return:
-        """
-        if self.exclude_categories:
-            excludes = [l.lower() for l in self.exclude_categories.split(",")]
-        else:
-            excludes = []
-
-        if self.start_file:
-            # change files from generator to list
-            files = list(files)
-            try:
-                files = files[files.index(self.start_file):]
-            except ValueError:
-                pass
-
-        for file_name in files:
-            start_time = time.time()
-
-            filtered_results = self.check_file(file_name)
-
-            if not filtered_results:
-                self.logger.info('No results found for image: {0:s}'.format(file_name))
-                continue
-
-            if self.move_to_categories:
-                categories = self.get_content_value(filtered_results, self.CONTENT_CATEGORY_KEY)
-
-                if not categories:
-                    self.logger.info("no categories found for file: {0:s}".format(file_name))
-                    continue
-
-                self.logger.debug('categories: {0:s}'.format(', '.join(categories)))
-
-                # since many pictures are tagged as original and with a proper category
-                # we remove the original category if we have more than 1 category
-                if len(categories) > 1 and 'original' in categories:
-                    categories.remove('original')
-
-                # take the first category
-                category = categories[0]
-
-                if get_similar_titles:
-                    similar_titles = get_similar_titles(category)
-
-                    if similar_titles and similar_titles[0]['similarity'] * 100 >= self.title_minimum_similarity:
-                        self.logger.info(
-                            "Similar title found: {0:s}, {1:s} ({2:.2f}%)".format(
-                                category, similar_titles[0]['title'], similar_titles[0]['similarity'] * 100))
-                        category = similar_titles[0]['title']
-
-                # sub categories we don't want to move like original etc
-                if category.lower() in excludes:
-                    self.logger.info("skipping excluded category: {0:s} ({1:s})".format(category, file_name))
-                    continue
-
-                self.logger.info("moving {0:s} to category: {1:s}".format(file_name, category))
-                FileHandler.move_to_category(file_name, category, base_directory=self.directory)
-            else:
-                yield {
-                    'filename': file_name,
-                    'results': filtered_results
-                }
-
-            duration = time.time() - start_time
-            if duration < (30 / self.LIMIT_30_SECONDS):
-                self.logger.debug("sleeping '{:.2f}' seconds".format((30 / self.LIMIT_30_SECONDS) - duration))
-                time.sleep((30 / self.LIMIT_30_SECONDS) - duration)
 
     def check_file(self, file_name: str) -> list:
         """Check the given file for results on SauceNAO
@@ -159,7 +85,7 @@ class SauceNao(object):
         :return:
         """
         self.logger.info("checking file: {0:s}".format(file_name))
-        if self.combine_api_types:
+        if self._combine_api_types:
             result = self.check_image(file_name, self.API_HTML_TYPE)
             sorted_results = self.parse_results_json(result)
 
@@ -167,7 +93,7 @@ class SauceNao(object):
             additional_sorted_results = self.parse_results_json(additional_result)
             sorted_results = self.merge_results(sorted_results, additional_sorted_results)
         else:
-            result = self.check_image(file_name, self.output_type)
+            result = self.check_image(file_name, self._output_type)
             sorted_results = self.parse_results_json(result)
 
         filtered_results = self.filter_results(sorted_results)
@@ -180,7 +106,7 @@ class SauceNao(object):
         :type file_name: str
         :return:
         """
-        file_path = os.path.join(self.directory, file_name)
+        file_path = os.path.join(self._directory, file_name)
 
         files = {'file': open(file_path, 'rb').read()}
         headers = {
@@ -201,63 +127,34 @@ class SauceNao(object):
             'hide': 0,
             # parameters taken from API documentation: https://saucenao.com/user.php?page=search-api
             'output_type': output_type,
-            'db': self.databases,
+            'db': self._databases,
         }
 
-        if self.api_key:
-            params['api_key'] = self.api_key
+        if self._api_key:
+            params['api_key'] = self._api_key
 
         link = requests.post(url=self.SEARCH_POST_URL, files=files, params=params, headers=headers)
 
-        action = self.verify_status_code(link, file_name)
+        code, msg = http.verify_status_code(link, file_name)
 
-        if action == self.STATUS_CODE_SKIP:
+        if code == http.STATUS_CODE_SKIP:
+            self.logger.error(msg)
             return json.dumps({'results': []})
-        elif action == self.STATUS_CODE_REPEAT:
-            self.logger.info("Received an unexpected status code, repeating after 10 seconds...")
-            time.sleep(10)
-            return self.check_image(file_name, output_type)
+        elif code == http.STATUS_CODE_REPEAT:
+            if not self._previous_status_code:
+                self._previous_status_code = code
+                self.logger.info("Received an unexpected status code, repeating after 10 seconds...")
+                time.sleep(10)
+                return self.check_image(file_name, output_type)
+            else:
+                raise UnknownStatusCodeException(msg)
         else:
-            self.previous_status_code = None
+            self._previous_status_code = None
 
         if output_type == self.API_HTML_TYPE:
             return self.parse_results_html_to_json(link.text)
 
         return link.text
-
-    def verify_status_code(self, request_response: requests.Response, file_name: str) -> int:
-        """Verify the status code of the post request to the search url and raise exceptions if the code is unexpected
-
-        :type request_response: requests.Response
-        :type file_name: str
-        :return:
-        """
-        if request_response.status_code == 200:
-            return self.STATUS_CODE_OK
-
-        elif request_response.status_code == 429:
-            if 'limit of 150 searches' in request_response.text:
-                self.logger.error("Daily search limit for unregistered users reached")
-                raise DailyLimitReachedException('Daily search limit for unregistered users reached')
-            elif 'limit of 300 searches' in request_response.text:
-                self.logger.error("Daily search limit for basic users reached")
-                raise DailyLimitReachedException('Daily search limit for basic users reached')
-            else:
-                self.logger.error("Daily search limit reached")
-                raise DailyLimitReachedException('Daily search limit reached')
-        elif request_response.status_code == 403:
-            self.logger.error("Invalid or wrong API key")
-            raise InvalidOrWrongApiKeyException("Invalid or wrong API key")
-        elif request_response.status_code == 413:
-            self.logger.error("Payload too large, skipping file: {0:s}".format(file_name))
-            return self.STATUS_CODE_SKIP
-        else:
-            if not self.previous_status_code:
-                self.previous_status_code = request_response.status_code
-                return self.STATUS_CODE_REPEAT
-
-            self.logger.error("Unknown status code: {0:d}".format(request_response.status_code))
-            raise UnknownStatusCodeException("Unknown status code: {0:d}".format(request_response.status_code))
 
     @staticmethod
     def parse_results_html_to_json(html: str) -> str:
@@ -322,7 +219,7 @@ class SauceNao(object):
         """
         filtered_results = []
         for res in sorted_results:
-            if float(res['header']['similarity']) >= float(self.minimum_similarity):
+            if float(res['header']['similarity']) >= float(self._minimum_similarity):
                 filtered_results.append(res)
             else:
                 # we can break here since the results are sorted by similarity anyways

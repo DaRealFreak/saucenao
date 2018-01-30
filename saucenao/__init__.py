@@ -7,6 +7,9 @@ from saucenao.files.constraint import Constraint
 from saucenao.files.filehandler import FileHandler
 from saucenao.files.filter import Filter
 from saucenao.saucenao import SauceNao
+from saucenao.worker import Worker
+
+__all__ = [SauceNao, FileHandler, Filter, Constraint]
 
 
 def run_application():
@@ -51,9 +54,9 @@ def run_application():
                                                       cmp_func=Constraint.cmp_value_bigger_or_equal)
     files = FileHandler.get_files(args.dir, file_filter)
 
-    sauce_nao = SauceNao(args.dir, databases=args.databases, minimum_similarity=args.minimum_similarity,
-                         combine_api_types=args.combine_api_types, api_key=args.api_key,
-                         exclude_categories=args.exclude_categories, move_to_categories=args.move_to_categories,
-                         start_file=args.start_file, log_level=args.log_level,
-                         title_minimum_similarity=args.title_minimum_similarity)
-    return sauce_nao.check_files(files)
+    saucenao_worker = Worker(files=files, directory=args.dir, databases=args.databases,
+                             minimum_similarity=args.minimum_similarity, combine_api_types=args.combine_api_types,
+                             api_key=args.api_key, exclude_categories=args.exclude_categories,
+                             move_to_categories=args.move_to_categories, start_file=args.start_file,
+                             log_level=args.log_level, title_minimum_similarity=args.title_minimum_similarity)
+    return saucenao_worker.run()
