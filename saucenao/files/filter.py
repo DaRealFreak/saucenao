@@ -54,22 +54,22 @@ class Filter:
         return self._file_system_objects
 
     @staticmethod
-    def _get_timestamp_from_datestring(date_string):
+    def _get_timestamp_from_datestring(date_string) -> float:
         """Convert the given date string to timestamp
 
         :param date_string:
         :return:
         """
-        if re.match('\d+.\d+.\d+ \d+:\d+:\d+', date_string):
+        if re.match(r'\d+.\d+.\d+ \d+:\d+:\d+', date_string):
             return datetime.datetime.strptime(date_string, "%d.%m.%Y %H:%M:%S").timestamp()
-        elif re.match('\d+.\d+.\d+ \d+:\d+', date_string):
+        elif re.match(r'\d+.\d+.\d+ \d+:\d+', date_string):
             return datetime.datetime.strptime(date_string, "%d.%m.%Y %H:%M").timestamp()
-        elif re.match('\d+.\d+.\d+', date_string):
+        elif re.match(r'\d+.\d+.\d+', date_string):
             return datetime.datetime.strptime(date_string, "%d.%m.%Y").timestamp()
         else:
             raise AttributeError("The date doesn't fit the format: d.m.Y[ H:M[:S]]")
 
-    def apply(self, directory='', file_system_objects=None):
+    def apply(self, directory='', file_system_objects=None) -> Generator[str, None, None]:
         """Apply the filter values to the given FSOs(File System Objects)
 
         :type directory: str
@@ -120,7 +120,7 @@ class Filter:
 
             yield file_system_object
 
-    def apply_creation_date(self, file_stats):
+    def apply_creation_date(self, file_stats: os.stat_result) -> bool:
         """Apply creation date option
 
         :param file_stats:
@@ -133,7 +133,7 @@ class Filter:
         else:
             return False
 
-    def apply_modified_date(self, file_stats):
+    def apply_modified_date(self, file_stats: os.stat_result) -> bool:
         """Apply modified date option
 
         :param file_stats:
