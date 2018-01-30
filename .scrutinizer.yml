@@ -1,11 +1,14 @@
 # scrutinizer-ci.com configuration
+
+# language: python
 imports:
     - python
 
 checks:
     python:
-        code_rating: true
         duplicate_code: true
+        code_rating: true
+        classes_valid_slots: true
 
 before_commands:
     - pip install .
