@@ -151,7 +151,10 @@ class TestFilesFilter(unittest.TestCase):
         # filter now for files >= 1024 bytes
         file_filter = Filter(size=Constraint(self.TEST_BIG_FILE_SIZE, cmp_func=Constraint.cmp_value_bigger_or_equal))
         files = file_filter.apply(directory=self.dir)
-        self.assertEqual(len(list(files)), 1)
+        file_list = list(files)
+        # workaround since scrutinizer has another file in created directories with differencing sizes each run
+        # normal check would've been to check the file list length == 1
+        self.assertTrue('big_file' in file_list and 'named_file.jpg' not in file_list)
 
     def test_non_existent_path(self):
         """Test filter for removing non existent files
@@ -188,7 +191,7 @@ class TestFilesFilter(unittest.TestCase):
 
         :return:
         """
-        file_name = os.path.join(self.dir, str(uuid.uuid4()))
+        file_name = os.path.join(self.dir, 'big_file')
         with open(file_name, "wb") as file_handler:
             file_handler.seek(self.TEST_BIG_FILE_SIZE - 1)
             file_handler.write(b"\0")

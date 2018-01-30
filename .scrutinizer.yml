@@ -1,5 +1,4 @@
 # scrutinizer-ci.com configuration
-
 # language: python
 imports:
     - python
