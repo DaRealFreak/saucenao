@@ -7,13 +7,17 @@ imports:
 build:
     environment:
         python: 3.6.3
+    tests:
+        before:
+            - 'pip install .'
+            - 'pip install .[unittests]'
+            - 'pip install nose-exclude'
+        override:
+            -
+                command: 'nosetests --exclude-dir=tests/custom'
 
 checks:
     python:
-        duplicate_code: true
         code_rating: true
+        duplicate_code: true
         classes_valid_slots: true
-
-before_commands:
-    - pip install .
-    - pip install .[unittests]
