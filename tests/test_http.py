@@ -7,7 +7,7 @@ import requests_mock
 from saucenao.http import *
 
 
-class TestConstraint(unittest.TestCase):
+class TestHttp(unittest.TestCase):
     """Test the verify_status_code function with multiple mock responses"""
 
     def setUp(self):
@@ -80,5 +80,5 @@ class TestConstraint(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestConstraint)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestHttp)
     unittest.TextTestRunner(verbosity=2).run(suite)
