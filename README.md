@@ -25,6 +25,7 @@ Optional:
 
 * [Pillow](https://python-pillow.org) - Python Imaging Library, used to generate images for unittests
 * [python-dotenv](https://github.com/theskumar/python-dotenv) - .env file loader used for unittests
+* [requests-mock](https://pypi.python.org/pypi/requests-mock) - requests mock responses used for unittests
 
 
 ### Usage
