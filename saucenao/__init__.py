@@ -1,11 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 import argparse
 import logging
 
-from saucenao.files.constraint import Constraint
-from saucenao.files.filehandler import FileHandler
-from saucenao.files.filter import Filter
+from saucenao.files import Constraint, FileHandler, Filter
 from saucenao.saucenao import SauceNao
 from saucenao.worker import Worker
 
