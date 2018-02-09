@@ -51,9 +51,9 @@ def run_application():
     if args.filter_modified_date:
         file_filter._filter_modified_date = Constraint(value=args.filter_modified_date,
                                                        cmp_func=Constraint.cmp_value_bigger_or_equal)
-    files = FileHandler.get_files(args.dir, file_filter)
+    working_files = FileHandler.get_files(args.dir, file_filter)
 
-    saucenao_worker = Worker(files=files, directory=args.dir, databases=args.databases,
+    saucenao_worker = Worker(files=working_files, directory=args.dir, databases=args.databases,
                              minimum_similarity=args.minimum_similarity, combine_api_types=args.combine_api_types,
                              api_key=args.api_key, exclude_categories=args.exclude_categories,
                              move_to_categories=args.move_to_categories, start_file=args.start_file,
