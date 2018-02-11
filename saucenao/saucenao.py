@@ -93,15 +93,13 @@ class SauceNao(object):
         filtered_results = self.filter_results(sorted_results)
         return filtered_results
 
-    def check_image(self, file_name: str, output_type: int) -> str:
-        """Check the possible sources for the given file
+    def get_http_data(self, file_path: str, output_type: int):
+        """Prepare the http relevant data(files, headers, params) for the given file path and output type
 
-        :type output_type: int
-        :type file_name: str
+        :param file_path:
+        :param output_type:
         :return:
         """
-        file_path = os.path.join(self._directory, file_name)
-
         with open(file_path, 'rb') as file_object:
             files = {'file': file_object.read()}
 
@@ -130,6 +128,18 @@ class SauceNao(object):
         if self._api_key:
             params['api_key'] = self._api_key
 
+        return files, params, headers
+
+    def check_image(self, file_name: str, output_type: int) -> str:
+        """Check the possible sources for the given file
+
+        :type output_type: int
+        :type file_name: str
+        :return:
+        """
+        file_path = os.path.join(self._directory, file_name)
+
+        files, params, headers = self.get_http_data(file_path=file_path, output_type=output_type)
         link = requests.post(url=self.SEARCH_POST_URL, files=files, params=params, headers=headers)
 
         code, msg = http.verify_status_code(link, file_name)
