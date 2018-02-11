@@ -4,6 +4,7 @@
 import os
 import shutil
 import sys
+import types
 import unittest
 from uuid import uuid4
 
@@ -49,7 +50,9 @@ class TestInit(unittest.TestCase):
         :return:
         """
         sys.argv = [sys.argv[0], '-d', self.directory]
-        run_application()
+        results = run_application()
+        self.assertIsInstance(results, types.GeneratorType)
+        results = list(results)
 
 
 if __name__ == '__main__':
