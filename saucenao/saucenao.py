@@ -102,7 +102,9 @@ class SauceNao(object):
         """
         file_path = os.path.join(self._directory, file_name)
 
-        files = {'file': open(file_path, 'rb').read()}
+        with open(file_path, 'rb') as file_object:
+            files = {'file': file_object.read()}
+
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
                           'Chrome/63.0.3239.84 Safari/537.36',
@@ -112,6 +114,7 @@ class SauceNao(object):
             'DNT': '1',
             'Connection': 'keep-alive'
         }
+
         params = {
             'file': file_path,
             'Content-Type': self.mime.guess_type(file_path),
