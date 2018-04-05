@@ -11,7 +11,7 @@ from PIL import Image
 from saucenao.saucenao import DailyLimitReachedException
 from saucenao.saucenao import SauceNao
 
-dotenv_path = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, '.env')
+dotenv_path = os.path.join(os.path.dirname(__file__), os.path.pardir, os.path.pardir, '.env')
 dotenv.load_dotenv(dotenv_path)
 
 SAUCENAO_MIN_WIDTH = 3
@@ -110,8 +110,8 @@ class TestSauceNaoLimits(unittest.TestCase):
         test_files = [self.test_jpg] * (SAUCENAO_IP_LIMIT_UNREGISTERED_USER - 2)
         try:
             # check_files returns a generator so we have to improvise here a bit
-            for _ in self.saucenao_html.check_files(test_files):
-                pass
+            for test_file in test_files:
+                self.saucenao_html.check_file(test_file)
         except DailyLimitReachedException:
             pass
 
@@ -126,8 +126,8 @@ class TestSauceNaoLimits(unittest.TestCase):
         test_files = [self.test_jpg] * (SAUCENAO_IP_LIMIT_BASIC_USER - SAUCENAO_IP_LIMIT_UNREGISTERED_USER - 4)
         try:
             # check_files returns a generator so we have to improvise here a bit
-            for _ in self.saucenao_html.check_files(test_files):
-                pass
+            for test_file in test_files:
+                self.saucenao_html.check_file(test_file)
         except DailyLimitReachedException:
             pass
 
