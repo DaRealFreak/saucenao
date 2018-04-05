@@ -3,7 +3,6 @@
 import json
 import logging
 import os
-import os.path
 import re
 import time
 from mimetypes import MimeTypes
