@@ -13,8 +13,10 @@ matrix:
     - python: nightly
 
 install:
-  - pip install .
-  - pip install .[unittests]
+  - python setup.py install
+  - pip install 'python-dotenv>=0.7.1'
+  - pip install 'Pillow>=5.0.0'
+  - pip install 'requests_mock>=1.4.0'
   - pip install nose-exclude
   - pip install coveralls
 
