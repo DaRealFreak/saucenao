@@ -40,8 +40,8 @@ class SauceNao(object):
     logger = None
 
     def __init__(self, directory, databases=999, minimum_similarity=65, combine_api_types=False, api_key=None,
-                 exclude_categories='', move_to_categories=False, output_type=API_HTML_TYPE, start_file=None,
-                 log_level=logging.ERROR, title_minimum_similarity=90, use_author_as_category=False):
+                 exclude_categories='', move_to_categories=False, use_author_as_category=False,
+                 output_type=API_HTML_TYPE, start_file=None, log_level=logging.ERROR, title_minimum_similarity=90):
         """Initializing function
 
         :type directory: str
@@ -51,6 +51,8 @@ class SauceNao(object):
         :type api_key: str
         :type exclude_categories: str
         :type move_to_categories: bool
+        :type use_author_as_category: bool
+        :type output_type: int
         :type start_file: str
         :type log_level: int
         :type title_minimum_similarity: float
@@ -62,10 +64,10 @@ class SauceNao(object):
         self._api_key = api_key
         self._exclude_categories = exclude_categories
         self._move_to_categories = move_to_categories
+        self._use_author_as_category = use_author_as_category
         self._output_type = output_type
         self._start_file = start_file
         self._title_minimum_similarity = title_minimum_similarity
-        self._use_author_as_category = use_author_as_category
 
         self._previous_status_code = None
 
