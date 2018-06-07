@@ -32,26 +32,28 @@ Optional:
 You can run SauceNAO either as module:
 ```
 import logging
-from saucenao.saucenao import SauceNao
+from saucenao import SauceNao
 
-saucenao = SauceNao('directory', databases=999, minimum_similarity=65, combine_api_types=False, api_key='',
-                    exclude_categories='', move_to_categories=False, output_type=SauceNao.API_HTML_TYPE, start_file='',
-                    log_level=logging.ERROR, title_minimum_similarity=90)
-
+saucenao = SauceNao(directory='directory', databases=999, minimum_similarity=65, combine_api_types=False, api_key='',
+                    exclude_categories='', move_to_categories=False,  use_author_as_category=False,
+                    output_type=SauceNao.API_HTML_TYPE, start_file='', log_level=logging.ERROR,
+                    title_minimum_similarity=90)
 ```
 
 or as application:
 ```
-python usage.py --dir [--databases] [--minimum-similarity] [--combine-api-types] [--api-key] [--exclude-categories] [--move-to-categories] [--output-type] [--start-file] [--log-level] [--filter-creation-date] [--filter-modified-date] [--title-minimum-similarity]
+python usage.py --dir [--databases] [--minimum-similarity] [--combine-api-types] [--api-key] [--exclude-categories] [--move-to-categories] [--use-author-as-category] [--output-type] [--start-file] [--log-level] [--filter-creation-date] [--filter-modified-date] [--title-minimum-similarity]
 ```
 
 you can also use it to get the gathered information for your own script:
 ```
-filtered_results = saucenao.check_file('test.jpg')
+filtered_results = saucenao.check_file(file_name='test.jpg')
 ```
-or get a generator object for a bulk of files:
+or get a generator object for a bulk of files using the worker class, all parameters work here too:
 ```
-results = saucenao.check_files(('test.jpg', 'test2.jpg'))
+from saucenao import Worker
+
+results = Worker(directory='directory', files=('test.jpg', 'test2.jpg')).run()
 ```
 
 
