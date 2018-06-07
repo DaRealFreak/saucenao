@@ -79,12 +79,12 @@ class Worker(SauceNao):
                 return self.complete_file_list
         return self.complete_file_list
 
-    def move_to_categories(self, file_name: str, results):
-        """Check the file for categories and move it to the corresponding folder
+    def get_category(self, results):
+        """retrieve the category of the checked image based which can be either
+        the content of the image or the author of the image
 
-        :type file_name: str
-        :type results: list|tuple|Generator
-        :return: bool
+        :param results:
+        :return: str
         """
         if self._use_author_as_category:
             categories = self.get_title_value(results, SauceNao.CONTENT_AUTHOR_KEY)
@@ -92,8 +92,7 @@ class Worker(SauceNao):
             categories = self.get_content_value(results, SauceNao.CONTENT_CATEGORY_KEY)
 
         if not categories:
-            self.logger.info("no categories found for file: {0:s}".format(file_name))
-            return False
+            return ''
 
         self.logger.debug('categories: {0:s}'.format(', '.join(categories)))
 
@@ -103,7 +102,19 @@ class Worker(SauceNao):
             categories.remove('original')
 
         # take the first category
-        category = categories[0]
+        return categories[0]
+
+    def move_to_categories(self, file_name: str, results):
+        """Check the file for categories and move it to the corresponding folder
+
+        :type file_name: str
+        :type results: list|tuple|Generator
+        :return: bool
+        """
+        category = self.get_category(results)
+        if not category:
+            self.logger.info("no categories found for file: {0:s}".format(file_name))
+            return False
 
         if not self._use_author_as_category:
             category = self.get_similar_title(category)
