@@ -33,6 +33,7 @@ class SauceNao(object):
     API_JSON_TYPE = 2
 
     CONTENT_CATEGORY_KEY = 'Material'
+    CONTENT_AUTHOR_KEY = 'Creator'
     CONTENT_CHARACTERS_KEY = 'Characters'
 
     mime = None
@@ -40,7 +41,7 @@ class SauceNao(object):
 
     def __init__(self, directory, databases=999, minimum_similarity=65, combine_api_types=False, api_key=None,
                  exclude_categories='', move_to_categories=False, output_type=API_HTML_TYPE, start_file=None,
-                 log_level=logging.ERROR, title_minimum_similarity=90):
+                 log_level=logging.ERROR, title_minimum_similarity=90, use_author_as_category=False):
         """Initializing function
 
         :type directory: str
@@ -64,6 +65,7 @@ class SauceNao(object):
         self._output_type = output_type
         self._start_file = start_file
         self._title_minimum_similarity = title_minimum_similarity
+        self._use_author_as_category = use_author_as_category
 
         self._previous_status_code = None
 
@@ -246,6 +248,22 @@ class SauceNao(object):
                 for content in result['data']['content']:
                     if re.match('{0:s}: .*'.format(key), content):
                         return ''.join(re.split(r'{0:s}: '.format(key), content)[1:]).rstrip("\n").split('\n')
+        return ''
+
+    @staticmethod
+    def get_title_value(results, key: str):
+        """Return the first match of Material in the title section
+        SauceNAO provides the authors name in the title section f.e. if provided by the indexed entry
+
+        :type results: list|tuple|Generator
+        :type key: str
+        :return:
+        """
+        for result in results:
+            if 'title' in list(result['data'].keys()):
+                if re.match('{0:s}: .*'.format(key), result['data']['title']):
+                    return ''.join(re.split(r'{0:s}: '.format(key), result['data']['title'])[1:]).rstrip("\n") \
+                        .split('\n')
         return ''
 
     @staticmethod

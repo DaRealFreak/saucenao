@@ -31,6 +31,8 @@ def run_application():
                         help='with which file the checks start in case of after reaching the daily limit')
     parser.add_argument('-log', '--log-level', default=logging.ERROR, type=int,
                         help='which log level should be used, check logging._levelNames for options')
+    parser.add_argument('-author', '--use-author-as-category', default=False, action='store_true',
+                        help='use author as category key instead of material')
 
     parser.add_argument('-fcrdt', '--filter-creation-date', type=str,
                         help='filters files for created after given date. '
@@ -57,5 +59,6 @@ def run_application():
                              minimum_similarity=args.minimum_similarity, combine_api_types=args.combine_api_types,
                              api_key=args.api_key, exclude_categories=args.exclude_categories,
                              move_to_categories=args.move_to_categories, start_file=args.start_file,
-                             log_level=args.log_level, title_minimum_similarity=args.title_minimum_similarity)
+                             log_level=args.log_level, title_minimum_similarity=args.title_minimum_similarity,
+                             use_author_as_category=args.use_author_as_category)
     return saucenao_worker.run()

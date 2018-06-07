@@ -86,7 +86,10 @@ class Worker(SauceNao):
         :type results: list|tuple|Generator
         :return: bool
         """
-        categories = self.get_content_value(results, SauceNao.CONTENT_CATEGORY_KEY)
+        if self._use_author_as_category:
+            categories = self.get_title_value(results, SauceNao.CONTENT_AUTHOR_KEY)
+        else:
+            categories = self.get_content_value(results, SauceNao.CONTENT_CATEGORY_KEY)
 
         if not categories:
             self.logger.info("no categories found for file: {0:s}".format(file_name))
@@ -96,13 +99,14 @@ class Worker(SauceNao):
 
         # since many pictures are tagged as original and with a proper category
         # we remove the original category if we have more than 1 category
-        if len(categories) > 1 and 'original' in categories:
+        if not self._use_author_as_category and len(categories) > 1 and 'original' in categories:
             categories.remove('original')
 
         # take the first category
         category = categories[0]
 
-        category = self.get_similar_title(category)
+        if not self._use_author_as_category:
+            category = self.get_similar_title(category)
 
         # sub categories we don't want to move like original etc
         if category.lower() in self.excludes:
@@ -113,8 +117,9 @@ class Worker(SauceNao):
         FileHandler.move_to_category(file_name, category, base_directory=self._directory)
         return True
 
-    def get_similar_title(self, category):
-        """
+    def get_similar_title(self, category: str):
+        """Check for a similar title of the category using my TitleSearch project which you can find here:
+        https://github.com/DaRealFreak/TitleSearch
 
         :param category:
         :return:
