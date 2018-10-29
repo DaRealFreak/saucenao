@@ -28,11 +28,6 @@ setup(name=about['__title__'],
           'requests>=2.18.4'
       ],
       extras_require={
-          'unittests': [
-              'python-dotenv>=0.7.1',
-              'Pillow>=5.0.0',
-              'requests_mock>=1.4.0'
-          ],
           'titlesearch': [
               'titlesearch>=0.0.1'
           ]

@@ -33,14 +33,15 @@ class SauceNao(object):
     API_JSON_TYPE = 2
 
     CONTENT_CATEGORY_KEY = 'Material'
+    CONTENT_AUTHOR_KEY = 'Creator'
     CONTENT_CHARACTERS_KEY = 'Characters'
 
     mime = None
     logger = None
 
     def __init__(self, directory, databases=999, minimum_similarity=65, combine_api_types=False, api_key=None,
-                 exclude_categories='', move_to_categories=False, output_type=API_HTML_TYPE, start_file=None,
-                 log_level=logging.ERROR, title_minimum_similarity=90):
+                 exclude_categories='', move_to_categories=False, use_author_as_category=False,
+                 output_type=API_HTML_TYPE, start_file=None, log_level=logging.ERROR, title_minimum_similarity=90):
         """Initializing function
 
         :type directory: str
@@ -50,6 +51,8 @@ class SauceNao(object):
         :type api_key: str
         :type exclude_categories: str
         :type move_to_categories: bool
+        :type use_author_as_category: bool
+        :type output_type: int
         :type start_file: str
         :type log_level: int
         :type title_minimum_similarity: float
@@ -61,6 +64,7 @@ class SauceNao(object):
         self._api_key = api_key
         self._exclude_categories = exclude_categories
         self._move_to_categories = move_to_categories
+        self._use_author_as_category = use_author_as_category
         self._output_type = output_type
         self._start_file = start_file
         self._title_minimum_similarity = title_minimum_similarity
@@ -246,6 +250,22 @@ class SauceNao(object):
                 for content in result['data']['content']:
                     if re.match('{0:s}: .*'.format(key), content):
                         return ''.join(re.split(r'{0:s}: '.format(key), content)[1:]).rstrip("\n").split('\n')
+        return ''
+
+    @staticmethod
+    def get_title_value(results, key: str):
+        """Return the first match of Material in the title section
+        SauceNAO provides the authors name in the title section f.e. if provided by the indexed entry
+
+        :type results: list|tuple|Generator
+        :type key: str
+        :return:
+        """
+        for result in results:
+            if 'title' in list(result['data'].keys()):
+                if re.match('{0:s}: .*'.format(key), result['data']['title']):
+                    return ''.join(re.split(r'{0:s}: '.format(key), result['data']['title'])[1:]).rstrip("\n") \
+                        .split('\n')
         return ''
 
     @staticmethod

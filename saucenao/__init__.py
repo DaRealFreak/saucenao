@@ -26,6 +26,8 @@ def run_application():
     parser.add_argument('-k', '--api-key', help='API key of your account on SauceNao')
     parser.add_argument('-x', '--exclude-categories', type=str, help='exclude specific categories from moving')
     parser.add_argument('-mv', '--move-to-categories', action='store_true', help='move images to categories')
+    parser.add_argument('-author', '--use-author-as-category', default=False, action='store_true',
+                        help='use author as category key instead of material')
     parser.add_argument('-o', '--output-type', default=0, type=int, help='0(html) or 2(json) API response')
     parser.add_argument('-sf', '--start-file',
                         help='with which file the checks start in case of after reaching the daily limit')
@@ -40,7 +42,8 @@ def run_application():
                              'Format of date has to match "d.m.Y[ H:M[:S]]"')
 
     parser.add_argument('-tmin', '--title-minimum-similarity', default=95, type=float,
-                        help='minimum similarity percentage for title search with BakaUpdates')
+                        help='minimum similarity percentage for title search with BakaUpdates, MyAnimeList and '
+                             'VisualNovelDatabase')
 
     args = parser.parse_args()
 
@@ -56,6 +59,7 @@ def run_application():
     saucenao_worker = Worker(files=working_files, directory=args.dir, databases=args.databases,
                              minimum_similarity=args.minimum_similarity, combine_api_types=args.combine_api_types,
                              api_key=args.api_key, exclude_categories=args.exclude_categories,
-                             move_to_categories=args.move_to_categories, start_file=args.start_file,
+                             move_to_categories=args.move_to_categories,
+                             use_author_as_category=args.use_author_as_category, start_file=args.start_file,
                              log_level=args.log_level, title_minimum_similarity=args.title_minimum_similarity)
     return saucenao_worker.run()
