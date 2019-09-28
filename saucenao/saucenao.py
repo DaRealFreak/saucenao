@@ -248,7 +248,7 @@ class SauceNao(object):
         for result in results:
             if 'content' in list(result['data'].keys()):
                 for content in result['data']['content']:
-                    if re.match('{0:s}: .*'.format(key), content):
+                    if re.search(r'{0:s}: .*'.format(key), content):
                         return ''.join(re.split(r'{0:s}: '.format(key), content)[1:]).rstrip("\n").split('\n')
         return ''
 
