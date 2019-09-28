@@ -66,17 +66,17 @@ class TestHttp(unittest.TestCase):
         mock.get(self.dummy_url, text='limit of 150 searches reached', status_code=429)
         with self.assertRaises(DailyLimitReachedException) as exception:
             verify_status_code(request_response=requests.get(self.dummy_url), file_name='tmp')
-            self.assertEqual(exception.msg, 'Daily search limit for unregistered users reached')
+            self.assertEqual(str(exception), 'Daily search limit for unregistered users reached')
 
         mock.get(self.dummy_url, text='limit of 300 searches reached', status_code=429)
         with self.assertRaises(DailyLimitReachedException) as exception:
             verify_status_code(request_response=requests.get(self.dummy_url), file_name='tmp')
-            self.assertEqual(exception.msg, 'Daily search limit for basic users reached')
+            self.assertEqual(str(exception), 'Daily search limit for basic users reached')
 
         mock.get(self.dummy_url, status_code=429)
         with self.assertRaises(DailyLimitReachedException) as exception:
             verify_status_code(request_response=requests.get(self.dummy_url), file_name='tmp')
-            self.assertEqual(exception.msg, 'Daily search limit reached')
+            self.assertEqual(str(exception), 'Daily search limit reached')
 
 
 if __name__ == '__main__':
