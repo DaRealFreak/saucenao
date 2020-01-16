@@ -60,7 +60,7 @@ class Worker(SauceNao):
         :return:
         """
         if self.exclude_categories:
-            return [l.lower() for l in self.exclude_categories.split(",")]
+            return [category.lower() for category in self.exclude_categories.split(",")]
         else:
             return []
 

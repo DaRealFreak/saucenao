@@ -79,6 +79,10 @@ class SauceNao(object):
         else:
             self.search_limit_30s = self.LIMIT_30_SECONDS[self.ACCOUNT_TYPE_UNREGISTERED]
 
+        if self.combine_api_types:
+            # if we combine the API types we require twice as many API requests, so half the limit per 30 seconds
+            self.search_limit_30s /= 2
+
         self.previous_status_code = None
 
         self.mime = MimeTypes()
