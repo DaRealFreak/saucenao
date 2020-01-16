@@ -35,8 +35,8 @@ setup(name=about['__title__'],
               'python-dotenv>=0.7.1',
               'Pillow>=5.0.0',
               'requests_mock>=1.4.0',
-              'nose-exclude',
-              'coveralls'
+              'nose-exclude>=0.5.0',
+              'coveralls>=1.10.0'
           ]
       },
       zip_safe=True)
