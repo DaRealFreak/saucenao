@@ -3,7 +3,7 @@
 
 __title__ = 'SauceNAO'
 __description__ = 'Small module to work with SauceNAO locally'
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 __url__ = 'https://github.com/DaRealFreak/saucenao'
 __author__ = 'DaRealFreak'
 __author_email__ = 'steffen.keuper@web.de'
