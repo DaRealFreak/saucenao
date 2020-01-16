@@ -49,9 +49,9 @@ class Worker(SauceNao):
                 }
 
             duration = time.time() - start_time
-            if duration < (30 / SauceNao.LIMIT_30_SECONDS):
-                self.logger.debug("sleeping '{:.2f}' seconds".format((30 / SauceNao.LIMIT_30_SECONDS) - duration))
-                time.sleep((30 / SauceNao.LIMIT_30_SECONDS) - duration)
+            if duration < (30 / self._search_limit_30s):
+                self.logger.debug("sleeping '{:.2f}' seconds".format((30 / self._search_limit_30s) - duration))
+                time.sleep((30 / self._search_limit_30s) - duration)
 
     @property
     def excludes(self):

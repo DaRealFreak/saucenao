@@ -23,9 +23,14 @@ class SauceNao(object):
 
     SEARCH_POST_URL = 'http://saucenao.com/search.php'
 
-    # basic account allows currently 15 images within 30 seconds
-    # you can increase this value is you have a premium account
-    LIMIT_30_SECONDS = 15
+    ACCOUNT_TYPE_UNREGISTERED = ""
+    ACCOUNT_TYPE_REGISTERED = "basic"
+
+    # individual search usage limitations
+    LIMIT_30_SECONDS = {
+        ACCOUNT_TYPE_UNREGISTERED: 4,
+        ACCOUNT_TYPE_REGISTERED: 15,
+    }
 
     # 0=html, 2=json but json is omitting important data but includes more data about authors
     # taken from the API documentation(requires login): https://saucenao.com/user.php?page=search-api
@@ -68,6 +73,11 @@ class SauceNao(object):
         self._output_type = output_type
         self._start_file = start_file
         self._title_minimum_similarity = title_minimum_similarity
+
+        if self._api_key:
+            self._search_limit_30s = self.LIMIT_30_SECONDS[self.ACCOUNT_TYPE_REGISTERED]
+        else:
+            self._search_limit_30s = self.LIMIT_30_SECONDS[self.ACCOUNT_TYPE_UNREGISTERED]
 
         self._previous_status_code = None
 
