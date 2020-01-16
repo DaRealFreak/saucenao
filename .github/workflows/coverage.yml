@@ -3,12 +3,13 @@ on:
   push:
     paths:
       - '**.py'
+      - '**.yml'
   pull_request:
     paths:
       - '**.py'
 
 env:
-  COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
 jobs:
   coverage:
