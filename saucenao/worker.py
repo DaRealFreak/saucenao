@@ -40,8 +40,8 @@ class Worker(SauceNao):
                 self.logger.info('No results found for image: {0:s}'.format(file_name))
                 continue
 
-            if self._move_to_categories:
-                self.move_to_categories(file_name=file_name, results=filtered_results)
+            if self.__move_to_categories:
+                self.__move_to_categories(file_name=file_name, results=filtered_results)
             else:
                 yield {
                     'filename': file_name,
@@ -49,9 +49,9 @@ class Worker(SauceNao):
                 }
 
             duration = time.time() - start_time
-            if duration < (30 / self._search_limit_30s):
-                self.logger.debug("sleeping '{:.2f}' seconds".format((30 / self._search_limit_30s) - duration))
-                time.sleep((30 / self._search_limit_30s) - duration)
+            if duration < (30 / self.search_limit_30s):
+                self.logger.debug("sleeping '{:.2f}' seconds".format((30 / self.search_limit_30s) - duration))
+                time.sleep((30 / self.search_limit_30s) - duration)
 
     @property
     def excludes(self):
@@ -59,8 +59,8 @@ class Worker(SauceNao):
 
         :return:
         """
-        if self._exclude_categories:
-            return [l.lower() for l in self._exclude_categories.split(",")]
+        if self.exclude_categories:
+            return [l.lower() for l in self.exclude_categories.split(",")]
         else:
             return []
 
@@ -70,23 +70,23 @@ class Worker(SauceNao):
 
         :return:
         """
-        if self._start_file:
+        if self.start_file:
             # change files from generator to list
             files = list(self.complete_file_list)
             try:
-                return files[files.index(self._start_file):]
+                return files[files.index(self.start_file):]
             except ValueError:
                 return self.complete_file_list
         return self.complete_file_list
 
-    def get_category(self, results):
+    def __get_category(self, results):
         """retrieve the category of the checked image based which can be either
         the content of the image or the author of the image
 
         :param results:
         :return: str
         """
-        if self._use_author_as_category:
+        if self.use_author_as_category:
             categories = self.get_title_value(results, SauceNao.CONTENT_AUTHOR_KEY)
         else:
             categories = self.get_content_value(results, SauceNao.CONTENT_CATEGORY_KEY)
@@ -98,26 +98,26 @@ class Worker(SauceNao):
 
         # since many pictures are tagged as original and with a proper category
         # we remove the original category if we have more than 1 category
-        if not self._use_author_as_category and len(categories) > 1 and 'original' in categories:
+        if not self.use_author_as_category and len(categories) > 1 and 'original' in categories:
             categories.remove('original')
 
         # take the first category
         return categories[0]
 
-    def move_to_categories(self, file_name: str, results):
+    def __move_to_categories(self, file_name: str, results):
         """Check the file for categories and move it to the corresponding folder
 
         :type file_name: str
         :type results: list|tuple|Generator
         :return: bool
         """
-        category = self.get_category(results)
+        category = self.__get_category(results)
         if not category:
             self.logger.info("no categories found for file: {0:s}".format(file_name))
             return False
 
-        if not self._use_author_as_category:
-            category = self.get_similar_title(category)
+        if not self.use_author_as_category:
+            category = self.__get_similar_title(category)
 
         # sub categories we don't want to move like original etc
         if category.lower() in self.excludes:
@@ -125,10 +125,10 @@ class Worker(SauceNao):
             return False
 
         self.logger.info("moving {0:s} to category: {1:s}".format(file_name, category))
-        FileHandler.move_to_category(file_name, category, base_directory=self._directory)
+        FileHandler.move_to_category(file_name, category, base_directory=self.directory)
         return True
 
-    def get_similar_title(self, category: str):
+    def __get_similar_title(self, category: str):
         """Check for a similar title of the category using my TitleSearch project which you can find here:
         https://github.com/DaRealFreak/TitleSearch
 
@@ -138,7 +138,7 @@ class Worker(SauceNao):
         if get_similar_titles:
             similar_titles = get_similar_titles(category)
 
-            if similar_titles and similar_titles[0]['similarity'] * 100 >= self._title_minimum_similarity:
+            if similar_titles and similar_titles[0]['similarity'] * 100 >= self.title_minimum_similarity:
                 self.logger.info(
                     "Similar title found: {0:s}, {1:s} ({2:.2f}%)".format(
                         category, similar_titles[0]['title'], similar_titles[0]['similarity'] * 100))

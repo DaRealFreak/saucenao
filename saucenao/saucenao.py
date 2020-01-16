@@ -62,24 +62,24 @@ class SauceNao(object):
         :type log_level: int
         :type title_minimum_similarity: float
         """
-        self._directory = directory
-        self._databases = databases
-        self._minimum_similarity = minimum_similarity
-        self._combine_api_types = combine_api_types
-        self._api_key = api_key
-        self._exclude_categories = exclude_categories
-        self._move_to_categories = move_to_categories
-        self._use_author_as_category = use_author_as_category
-        self._output_type = output_type
-        self._start_file = start_file
-        self._title_minimum_similarity = title_minimum_similarity
+        self.directory = directory
+        self.databases = databases
+        self.minimum_similarity = minimum_similarity
+        self.combine_api_types = combine_api_types
+        self.api_key = api_key
+        self.exclude_categories = exclude_categories
+        self.move_to_categories = move_to_categories
+        self.use_author_as_category = use_author_as_category
+        self.output_type = output_type
+        self.start_file = start_file
+        self.title_minimum_similarity = title_minimum_similarity
 
-        if self._api_key:
-            self._search_limit_30s = self.LIMIT_30_SECONDS[self.ACCOUNT_TYPE_REGISTERED]
+        if self.api_key:
+            self.search_limit_30s = self.LIMIT_30_SECONDS[self.ACCOUNT_TYPE_REGISTERED]
         else:
-            self._search_limit_30s = self.LIMIT_30_SECONDS[self.ACCOUNT_TYPE_UNREGISTERED]
+            self.search_limit_30s = self.LIMIT_30_SECONDS[self.ACCOUNT_TYPE_UNREGISTERED]
 
-        self._previous_status_code = None
+        self.previous_status_code = None
 
         self.mime = MimeTypes()
         logging.basicConfig(level=log_level)
@@ -92,21 +92,21 @@ class SauceNao(object):
         :return:
         """
         self.logger.info("checking file: {0:s}".format(file_name))
-        if self._combine_api_types:
-            result = self.check_image(file_name, self.API_HTML_TYPE)
+        if self.combine_api_types:
+            result = self.__check_image(file_name, self.API_HTML_TYPE)
             sorted_results = self.parse_results_json(result)
 
-            additional_result = self.check_image(file_name, self.API_JSON_TYPE)
+            additional_result = self.__check_image(file_name, self.API_JSON_TYPE)
             additional_sorted_results = self.parse_results_json(additional_result)
-            sorted_results = self.merge_results(sorted_results, additional_sorted_results)
+            sorted_results = self.__merge_results(sorted_results, additional_sorted_results)
         else:
-            result = self.check_image(file_name, self._output_type)
+            result = self.__check_image(file_name, self.output_type)
             sorted_results = self.parse_results_json(result)
 
-        filtered_results = self.filter_results(sorted_results)
+        filtered_results = self.__filter_results(sorted_results)
         return filtered_results
 
-    def get_http_data(self, file_path: str, output_type: int):
+    def __get_http_data(self, file_path: str, output_type: int):
         """Prepare the http relevant data(files, headers, params) for the given file path and output type
 
         :param file_path:
@@ -135,24 +135,24 @@ class SauceNao(object):
             'hide': 0,
             # parameters taken from API documentation: https://saucenao.com/user.php?page=search-api
             'output_type': output_type,
-            'db': self._databases,
+            'db': self.databases,
         }
 
-        if self._api_key:
-            params['api_key'] = self._api_key
+        if self.api_key:
+            params['api_key'] = self.api_key
 
         return files, params, headers
 
-    def check_image(self, file_name: str, output_type: int) -> str:
+    def __check_image(self, file_name: str, output_type: int) -> str:
         """Check the possible sources for the given file
 
         :type output_type: int
         :type file_name: str
         :return:
         """
-        file_path = os.path.join(self._directory, file_name)
+        file_path = os.path.join(self.directory, file_name)
 
-        files, params, headers = self.get_http_data(file_path=file_path, output_type=output_type)
+        files, params, headers = self.__get_http_data(file_path=file_path, output_type=output_type)
         link = requests.post(url=self.SEARCH_POST_URL, files=files, params=params, headers=headers)
 
         code, msg = http.verify_status_code(link, file_name)
@@ -161,15 +161,17 @@ class SauceNao(object):
             self.logger.error(msg)
             return json.dumps({'results': []})
         elif code == http.STATUS_CODE_REPEAT:
-            if not self._previous_status_code:
-                self._previous_status_code = code
-                self.logger.info("Received an unexpected status code, repeating after 10 seconds...")
+            if not self.previous_status_code:
+                self.previous_status_code = code
+                self.logger.info(
+                    "Received an unexpected status code (message: {msg}), repeating after 10 seconds...".format(msg=msg)
+                )
                 time.sleep(10)
-                return self.check_image(file_name, output_type)
+                return self.__check_image(file_name, output_type)
             else:
                 raise UnknownStatusCodeException(msg)
         else:
-            self._previous_status_code = None
+            self.previous_status_code = None
 
         if output_type == self.API_HTML_TYPE:
             return self.parse_results_html_to_json(link.text)
@@ -231,7 +233,7 @@ class SauceNao(object):
         results = [res for res in result['results']]
         return sorted(results, key=lambda k: float(k['header']['similarity']), reverse=True)
 
-    def filter_results(self, sorted_results) -> list:
+    def __filter_results(self, sorted_results) -> list:
         """Return results with a similarity bigger or the same as the defined similarity from the arguments (default 65%)
 
         :type sorted_results: list|tuple|Generator
@@ -239,7 +241,7 @@ class SauceNao(object):
         """
         filtered_results = []
         for res in sorted_results:
-            if float(res['header']['similarity']) >= float(self._minimum_similarity):
+            if float(res['header']['similarity']) >= float(self.minimum_similarity):
                 filtered_results.append(res)
             else:
                 # we can break here since the results are sorted by similarity anyways
@@ -279,7 +281,7 @@ class SauceNao(object):
         return ''
 
     @staticmethod
-    def merge_two_dicts(x: dict, y: dict) -> dict:
+    def merge_dicts(x: dict, y: dict) -> dict:
         """Take x dictionary and insert/overwrite y dictionary values
 
         :type x: dict
@@ -290,7 +292,7 @@ class SauceNao(object):
         z.update(y)
         return z
 
-    def merge_results(self, result: list, additional_result: list) -> list:
+    def __merge_results(self, result: list, additional_result: list) -> list:
         """Merge two result arrays
 
         :type result: list
@@ -304,6 +306,6 @@ class SauceNao(object):
 
         for i in range(length):
             for key in list(result[i].keys()):
-                result[i][key] = self.merge_two_dicts(result[i][key], additional_result[i][key])
+                result[i][key] = self.merge_dicts(result[i][key], additional_result[i][key])
 
         return result

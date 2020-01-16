@@ -24,7 +24,7 @@ def verify_status_code(request_response: requests.Response, file_name: str) -> t
         return STATUS_CODE_OK, ''
 
     elif request_response.status_code == 429:
-        if 'Search Rate Too High.' in request_response.text:
+        if 'user\'s rate limit' in request_response.text:
             msg = "Search rate limit reached"
             return STATUS_CODE_REPEAT, msg
         if 'limit of 150 searches' in request_response.text:
