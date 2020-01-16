@@ -104,8 +104,8 @@ class TestSauceNaoLimits(unittest.TestCase):
         self.run_tests(saucenao=self.saucenao_json, tests=self.NOT_IP_LIMIT_NOT_ACCOUNT_LIMIT)
 
         # now reach the daily limit without API key to reach the IP limit
-        if self.saucenao_html.__api_key:
-            self.saucenao_html.__api_key = None
+        if self.saucenao_html.api_key:
+            self.saucenao_html.api_key = None
 
         test_files = [self.test_jpg] * (SAUCENAO_IP_LIMIT_UNREGISTERED_USER - 2)
         try:
@@ -122,7 +122,7 @@ class TestSauceNaoLimits(unittest.TestCase):
         self.run_tests(saucenao=self.saucenao_json, tests=self.IP_LIMIT_NOT_ACCOUNT_LIMIT)
 
         # set API key to reach the account limit
-        self.saucenao_html.__api_key = SAUCENAO_API_KEY
+        self.saucenao_html.api_key = SAUCENAO_API_KEY
         test_files = [self.test_jpg] * (SAUCENAO_IP_LIMIT_BASIC_USER - SAUCENAO_IP_LIMIT_UNREGISTERED_USER - 4)
         try:
             # check_files returns a generator so we have to improvise here a bit
@@ -159,7 +159,7 @@ class TestSauceNaoLimits(unittest.TestCase):
         :type assert_success: bool
         :return:
         """
-        saucenao.__api_key = SAUCENAO_API_KEY
+        saucenao.api_key = SAUCENAO_API_KEY
         if assert_success:
             result = saucenao.check_file(self.test_jpg)
             self.assertIsInstance(result, list)
