@@ -23,13 +23,16 @@ class SauceNao(object):
 
     SEARCH_POST_URL = 'http://saucenao.com/search.php'
 
+    # all available account types, unregistered (always if no API key is passed), basic or premium
     ACCOUNT_TYPE_UNREGISTERED = ""
-    ACCOUNT_TYPE_REGISTERED = "basic"
+    ACCOUNT_TYPE_BASIC = "basic"
+    ACCOUNT_TYPE_PREMIUM = "premium"
 
     # individual search usage limitations
     LIMIT_30_SECONDS = {
         ACCOUNT_TYPE_UNREGISTERED: 4,
-        ACCOUNT_TYPE_REGISTERED: 15,
+        ACCOUNT_TYPE_BASIC: 6,
+        ACCOUNT_TYPE_PREMIUM: 15,
     }
 
     # 0=html, 2=json but json is omitting important data but includes more data about authors
@@ -45,7 +48,7 @@ class SauceNao(object):
     logger = None
 
     def __init__(self, directory, databases=999, minimum_similarity=65, combine_api_types=False, api_key=None,
-                 exclude_categories='', move_to_categories=False, use_author_as_category=False,
+                 is_premium=False, exclude_categories='', move_to_categories=False, use_author_as_category=False,
                  output_type=API_HTML_TYPE, start_file=None, log_level=logging.ERROR, title_minimum_similarity=90):
         """Initializing function
 
@@ -54,6 +57,7 @@ class SauceNao(object):
         :type minimum_similarity: float
         :type combine_api_types: bool
         :type api_key: str
+        :type is_premium: bool
         :type exclude_categories: str
         :type move_to_categories: bool
         :type use_author_as_category: bool
@@ -67,6 +71,7 @@ class SauceNao(object):
         self.minimum_similarity = minimum_similarity
         self.combine_api_types = combine_api_types
         self.api_key = api_key
+        self.is_premium = is_premium
         self.exclude_categories = exclude_categories
         self.move_to_categories = move_to_categories
         self.use_author_as_category = use_author_as_category
@@ -75,7 +80,11 @@ class SauceNao(object):
         self.title_minimum_similarity = title_minimum_similarity
 
         if self.api_key:
-            self.search_limit_30s = self.LIMIT_30_SECONDS[self.ACCOUNT_TYPE_REGISTERED]
+            if self.is_premium:
+                account_type = self.ACCOUNT_TYPE_PREMIUM
+            else:
+                account_type = self.ACCOUNT_TYPE_BASIC
+            self.search_limit_30s = self.LIMIT_30_SECONDS[account_type]
         else:
             self.search_limit_30s = self.LIMIT_30_SECONDS[self.ACCOUNT_TYPE_UNREGISTERED]
 

@@ -24,6 +24,7 @@ def run_application():
     parser.add_argument('-c', '--combine-api-types', action='store_true',
                         help='combine html and json api response to retrieve more information')
     parser.add_argument('-k', '--api-key', help='API key of your account on SauceNao')
+    parser.add_argument('-p', '--premium', help='is API key related user premium')
     parser.add_argument('-x', '--exclude-categories', type=str, help='exclude specific categories from moving')
     parser.add_argument('-mv', '--move-to-categories', action='store_true', help='move images to categories')
     parser.add_argument('-author', '--use-author-as-category', default=False, action='store_true',
@@ -58,8 +59,8 @@ def run_application():
 
     saucenao_worker = Worker(files=working_files, directory=args.dir, databases=args.databases,
                              minimum_similarity=args.minimum_similarity, combine_api_types=args.combine_api_types,
-                             api_key=args.api_key, exclude_categories=args.exclude_categories,
-                             move_to_categories=args.move_to_categories,
+                             api_key=args.api_key, is_premium=args.premium,
+                             exclude_categories=args.exclude_categories, move_to_categories=args.move_to_categories,
                              use_author_as_category=args.use_author_as_category, start_file=args.start_file,
                              log_level=args.log_level, title_minimum_similarity=args.title_minimum_similarity)
     return saucenao_worker.run()
