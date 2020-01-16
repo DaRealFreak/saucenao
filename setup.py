@@ -30,6 +30,13 @@ setup(name=about['__title__'],
       extras_require={
           'titlesearch': [
               'titlesearch>=0.0.1'
+          ],
+          'dev': [
+              'python-dotenv>=0.7.1',
+              'Pillow>=5.0.0',
+              'requests_mock>=1.4.0',
+              'nose-exclude',
+              'coveralls'
           ]
       },
       zip_safe=True)
