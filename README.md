@@ -1,7 +1,8 @@
 # SauceNAO
-[![Build Status](https://travis-ci.org/DaRealFreak/saucenao.svg?branch=master)](https://travis-ci.org/DaRealFreak/saucenao)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/DaRealFreak/saucenao/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/DaRealFreak/saucenao/?branch=master)
-[![Coverage Status](https://coveralls.io/repos/github/DaRealFreak/saucenao/badge.svg?branch=master)](https://coveralls.io/github/DaRealFreak/saucenao?branch=master)  
+![tests](https://github.com/DaRealFreak/saucenao/workflows/tests/badge.svg?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/DaRealFreak/saucenao/badge.svg?branch=master)](https://coveralls.io/github/DaRealFreak/saucenao?branch=master)
+![GitHub](https://img.shields.io/github/license/DaRealFreak/saucenao)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/DaRealFreak/saucenao/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/DaRealFreak/saucenao/?branch=master)  
 unofficial python module to make working with [SauceNAO](https://www.saucenao.com) in projects easier
 
 ### Installing
