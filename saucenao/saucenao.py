@@ -105,7 +105,7 @@ class SauceNao(object):
         """Initializing function
 
         :type directory: str
-        :type databases: int
+        :type databases: SauceNaoDatabase|int
         :type minimum_similarity: float
         :type combine_api_types: bool
         :type api_key: str
