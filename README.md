@@ -31,12 +31,13 @@ Optional:
 You can run SauceNAO either as module:
 ```
 import logging
-from saucenao import SauceNao
 
-saucenao = SauceNao(directory='directory', databases=999, minimum_similarity=65, combine_api_types=False,
-                    api_key='', is_premium=false, exclude_categories='', move_to_categories=False,
-                    use_author_as_category=False, output_type=SauceNao.API_HTML_TYPE, start_file='',
-                    log_level=logging.ERROR, title_minimum_similarity=90)
+from saucenao import SauceNao, SauceNaoDatabase
+
+saucenao = SauceNao(directory='directory', databases=SauceNaoDatabase.All, minimum_similarity=65,
+                    combine_api_types=False, api_key='', is_premium=False, exclude_categories='',
+                    move_to_categories=False, use_author_as_category=False, output_type=SauceNao.API_HTML_TYPE,
+                    start_file='', log_level=logging.ERROR, title_minimum_similarity=90)
 ```
 
 or as application:
