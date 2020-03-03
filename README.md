@@ -6,8 +6,7 @@
 unofficial python module to make working with [SauceNAO](https://www.saucenao.com) in projects easier
 
 ## Installation
-This script runs with [Python 3](https://www.python.org).  
-There is a currently working [Python 2 branch](https://github.com/DaRealFreak/saucenao/tree/Python-2.x), but I'm not going to update it anymore.  
+This package requires [Python](https://www.python.org) 3.6 or later.  
 
 You can simply install the latest version with
 ```shell script
