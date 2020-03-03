@@ -5,10 +5,10 @@ import argparse
 import logging
 
 from saucenao.files import Constraint, FileHandler, Filter
-from saucenao.saucenao import SauceNao
+from saucenao.saucenao import SauceNao, SauceNaoDatabase
 from saucenao.worker import Worker
 
-__all__ = [SauceNao, FileHandler, Filter, Constraint]
+__all__ = [SauceNao, SauceNaoDatabase, FileHandler, Filter, Constraint]
 
 
 def run_application():

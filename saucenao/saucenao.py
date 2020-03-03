@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+import enum
 import json
 import logging
 import os
@@ -14,6 +15,56 @@ from bs4 import element
 
 from saucenao import http
 from saucenao.exceptions import *
+
+
+class SauceNaoDatabase(enum.Enum):
+    """
+    database index supported by SauceNao
+    """
+
+    HMagazines = 0
+    HGameCG = 2
+    DoujinshiDB = 3
+    PixivImages = 5
+    NicoNicoSeiga = 8
+    Danbooru = 9
+    DrawrImages = 10
+    NijieImages = 11
+    YandeRe = 12
+    Shutterstock = 15
+    FAKKU = 16
+    HMisc = 18
+    TwoDMarket = 19
+    MediBang = 20
+    Anime = 21
+    HAnime = 22
+    Movies = 23
+    Shows = 24
+    Gelbooru = 25
+    Konachan = 26
+    SankakuChannel = 27
+    AnimePicturesNet = 28
+    E621Net = 29
+    IdolComplex = 30
+    BcyNetIllust = 31
+    BcyNetCosplay = 32
+    PortalGraphicsNet = 33
+    DeviantArt = 34
+    PawooNet = 35
+    MadokamiManga = 36
+    MangaDex = 37
+    All = 999
+
+    @classmethod
+    def is_uncompleted(cls, databases):
+        """Check if the database is uncompleted and the index should not be used
+
+        :type databases: int
+        :return:
+        """
+        return databases in [cls.HMagazines, cls.HGameCG, cls.DoujinshiDB, cls.Shutterstock, cls.Movies, cls.Shows,
+                             cls.SankakuChannel, cls.IdolComplex, cls.BcyNetIllust, cls.BcyNetCosplay, cls.DeviantArt,
+                             cls.PawooNet, cls.MangaDex]
 
 
 class SauceNao(object):
@@ -47,9 +98,10 @@ class SauceNao(object):
     mime = None
     logger = None
 
-    def __init__(self, directory, databases=999, minimum_similarity=65, combine_api_types=False, api_key=None,
-                 is_premium=False, exclude_categories='', move_to_categories=False, use_author_as_category=False,
-                 output_type=API_HTML_TYPE, start_file=None, log_level=logging.ERROR, title_minimum_similarity=90):
+    def __init__(self, directory, databases=SauceNaoDatabase.All, minimum_similarity=65, combine_api_types=False,
+                 api_key=None, is_premium=False, exclude_categories='', move_to_categories=False,
+                 use_author_as_category=False, output_type=API_HTML_TYPE, start_file=None, log_level=logging.ERROR,
+                 title_minimum_similarity=90):
         """Initializing function
 
         :type directory: str
@@ -97,6 +149,9 @@ class SauceNao(object):
         self.mime = MimeTypes()
         logging.basicConfig(level=log_level)
         self.logger = logging.getLogger("saucenao_logger")
+
+        if SauceNaoDatabase.is_uncompleted(self.databases):
+            self.logger.warning("Database #{db} is uncompleted and should not be used.".format(db=self.databases))
 
     def check_file(self, file_name: str) -> list:
         """Check the given file for results on SauceNAO
