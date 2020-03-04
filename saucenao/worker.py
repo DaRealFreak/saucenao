@@ -40,7 +40,7 @@ class Worker(SauceNao):
                 self.logger.info('No results found for image: {0:s}'.format(file_name))
                 continue
 
-            if self.__move_to_categories:
+            if self.move_to_categories:
                 self.__move_to_categories(file_name=file_name, results=filtered_results)
             else:
                 yield {
