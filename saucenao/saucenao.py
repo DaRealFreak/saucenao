@@ -6,8 +6,7 @@ import logging
 import os
 import re
 import time
-from mimetypes import MimeTypes
-from typing import Generator
+from typing import Generator, BinaryIO
 
 import requests
 from bs4 import BeautifulSoup as Soup
@@ -95,10 +94,9 @@ class SauceNao(object):
     CONTENT_AUTHOR_KEY = 'Creator'
     CONTENT_CHARACTERS_KEY = 'Characters'
 
-    mime = None
     logger = None
 
-    def __init__(self, directory, databases=SauceNaoDatabase.All, minimum_similarity=65, combine_api_types=False,
+    def __init__(self, directory='', databases=SauceNaoDatabase.All, minimum_similarity=65, combine_api_types=False,
                  api_key=None, is_premium=False, exclude_categories='', move_to_categories=False,
                  use_author_as_category=False, output_type=API_HTML_TYPE, start_file=None, log_level=logging.ERROR,
                  title_minimum_similarity=90):
@@ -146,7 +144,6 @@ class SauceNao(object):
 
         self.previous_status_code = None
 
-        self.mime = MimeTypes()
         logging.basicConfig(level=log_level)
         self.logger = logging.getLogger("saucenao_logger")
 
@@ -160,29 +157,39 @@ class SauceNao(object):
         :return:
         """
         self.logger.info("checking file: {0:s}".format(file_name))
+        file_path = os.path.join(self.directory, file_name)
+        with open(file_path, 'rb') as file_object:
+            return self.check_file_object(file_object)
+
+    def check_file_object(self, file_content: BinaryIO) -> list:
+        """Check the passed file content for results on SauceNAO
+
+        :type file_content: bytes
+        :return:
+        """
         if self.combine_api_types:
-            result = self.__check_image(file_name, self.API_HTML_TYPE)
+            result = self.__check_image(file_content, self.API_HTML_TYPE)
             sorted_results = self.parse_results_json(result)
 
-            additional_result = self.__check_image(file_name, self.API_JSON_TYPE)
+            file_content.seek(0)
+            additional_result = self.__check_image(file_content, self.API_JSON_TYPE)
             additional_sorted_results = self.parse_results_json(additional_result)
             sorted_results = self.__merge_results(sorted_results, additional_sorted_results)
         else:
-            result = self.__check_image(file_name, self.output_type)
+            result = self.__check_image(file_content, self.output_type)
             sorted_results = self.parse_results_json(result)
 
         filtered_results = self.__filter_results(sorted_results)
         return filtered_results
 
-    def __get_http_data(self, file_path: str, output_type: int):
+    def __get_http_data(self, file_object: BinaryIO, output_type: int):
         """Prepare the http relevant data(files, headers, params) for the given file path and output type
 
-        :param file_path:
+        :param file_object:
         :param output_type:
         :return:
         """
-        with open(file_path, 'rb') as file_object:
-            files = {'file': file_object.read()}
+        files = {'file': file_object.read()}
 
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
@@ -195,8 +202,7 @@ class SauceNao(object):
         }
 
         params = {
-            'file': file_path,
-            'Content-Type': self.mime.guess_type(file_path),
+            'file': file_object,
             # parameters taken from form on main page: https://saucenao.com/
             'url': None,
             'frame': 1,
@@ -211,19 +217,17 @@ class SauceNao(object):
 
         return files, params, headers
 
-    def __check_image(self, file_name: str, output_type: int) -> str:
-        """Check the possible sources for the given file
+    def __check_image(self, file_object: BinaryIO, output_type: int) -> str:
+        """Check the possible sources for the given file object
 
         :type output_type: int
-        :type file_name: str
+        :type file_object: typing.BinaryIO
         :return:
         """
-        file_path = os.path.join(self.directory, file_name)
-
-        files, params, headers = self.__get_http_data(file_path=file_path, output_type=output_type)
+        files, params, headers = self.__get_http_data(file_object=file_object, output_type=output_type)
         link = requests.post(url=self.SEARCH_POST_URL, files=files, params=params, headers=headers)
 
-        code, msg = http.verify_status_code(link, file_name)
+        code, msg = http.verify_status_code(link)
 
         if code == http.STATUS_CODE_SKIP:
             self.logger.error(msg)
@@ -235,7 +239,7 @@ class SauceNao(object):
                     "Received an unexpected status code (message: {msg}), repeating after 10 seconds...".format(msg=msg)
                 )
                 time.sleep(10)
-                return self.__check_image(file_name, output_type)
+                return self.__check_image(file_object, output_type)
             else:
                 raise UnknownStatusCodeException(msg)
         else:

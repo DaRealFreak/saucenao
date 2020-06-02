@@ -1,6 +1,5 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-import time
 
 import requests
 
@@ -13,11 +12,10 @@ STATUS_CODE_SKIP = 2
 STATUS_CODE_REPEAT = 3
 
 
-def verify_status_code(request_response: requests.Response, file_name: str) -> tuple:
+def verify_status_code(request_response: requests.Response) -> tuple:
     """Verify the status code of the post request to the search url and raise exceptions if the code is unexpected
 
     :type request_response: requests.Response
-    :type file_name: str
     :return:
     """
     if request_response.status_code == 200:
@@ -36,7 +34,7 @@ def verify_status_code(request_response: requests.Response, file_name: str) -> t
     elif request_response.status_code == 403:
         raise InvalidOrWrongApiKeyException("Invalid or wrong API key")
     elif request_response.status_code == 413:
-        msg = "Payload too large, skipping file: {0:s}".format(file_name)
+        msg = "Payload too large, skipping file"
         return STATUS_CODE_SKIP, msg
     else:
         msg = "Unknown status code: {0:d}".format(request_response.status_code)
