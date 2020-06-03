@@ -1,6 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import time
+from typing import BinaryIO
 
 try:
     from titlesearch import get_similar_titles
@@ -34,7 +35,10 @@ class Worker(SauceNao):
         for file_name in self.files:
             start_time = time.time()
 
-            filtered_results = self.check_file(file_name)
+            if isinstance(file_name, BinaryIO):
+                filtered_results = self.check_file_object(file_name)
+            else:
+                filtered_results = self.check_file(file_name)
 
             if not filtered_results:
                 self.logger.info('No results found for image: {0:s}'.format(file_name))
