@@ -16,7 +16,7 @@ class TestVersion(unittest.TestCase):
         :return:
         """
         # ToDo: check all requirements
-        self.assertEqual(bool(re.match('\d+.\d+', saucenao_version.__version__)), True)
+        self.assertEqual(bool(re.match(r'\d+.\d+', saucenao_version.__version__)), True)
 
 
 if __name__ == '__main__':

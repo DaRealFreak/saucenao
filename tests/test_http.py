@@ -24,7 +24,7 @@ class TestHttp(unittest.TestCase):
         :return:
         """
         mock.get(self.dummy_url, status_code=200)
-        status_code, msg = verify_status_code(request_response=requests.get(self.dummy_url), file_name='tmp')
+        status_code, msg = verify_status_code(request_response=requests.get(self.dummy_url))
         self.assertEqual(status_code, STATUS_CODE_OK)
 
     @requests_mock.mock()
@@ -34,7 +34,7 @@ class TestHttp(unittest.TestCase):
         :return:
         """
         mock.get(self.dummy_url, status_code=413)
-        status_code, msg = verify_status_code(request_response=requests.get(self.dummy_url), file_name='tmp')
+        status_code, msg = verify_status_code(request_response=requests.get(self.dummy_url))
         self.assertEqual(status_code, STATUS_CODE_SKIP)
 
     @requests_mock.mock()
@@ -44,7 +44,7 @@ class TestHttp(unittest.TestCase):
         :return:
         """
         mock.get(self.dummy_url, text='', status_code=999)
-        status_code, msg = verify_status_code(request_response=requests.get(self.dummy_url), file_name='tmp')
+        status_code, msg = verify_status_code(request_response=requests.get(self.dummy_url))
         self.assertEqual(status_code, STATUS_CODE_REPEAT)
 
     @requests_mock.mock()
@@ -55,7 +55,7 @@ class TestHttp(unittest.TestCase):
         """
         mock.get(self.dummy_url, text='', status_code=403)
         with self.assertRaises(InvalidOrWrongApiKeyException) as _:
-            verify_status_code(request_response=requests.get(self.dummy_url), file_name='tmp')
+            verify_status_code(request_response=requests.get(self.dummy_url))
 
     @requests_mock.mock()
     def test_status_code_limit(self, mock):
@@ -65,17 +65,17 @@ class TestHttp(unittest.TestCase):
         """
         mock.get(self.dummy_url, text='limit of 150 searches reached', status_code=429)
         with self.assertRaises(DailyLimitReachedException) as exception:
-            verify_status_code(request_response=requests.get(self.dummy_url), file_name='tmp')
+            verify_status_code(request_response=requests.get(self.dummy_url))
             self.assertEqual(str(exception), 'Daily search limit for unregistered users reached')
 
         mock.get(self.dummy_url, text='limit of 300 searches reached', status_code=429)
         with self.assertRaises(DailyLimitReachedException) as exception:
-            verify_status_code(request_response=requests.get(self.dummy_url), file_name='tmp')
+            verify_status_code(request_response=requests.get(self.dummy_url))
             self.assertEqual(str(exception), 'Daily search limit for basic users reached')
 
         mock.get(self.dummy_url, status_code=429)
         with self.assertRaises(DailyLimitReachedException) as exception:
-            verify_status_code(request_response=requests.get(self.dummy_url), file_name='tmp')
+            verify_status_code(request_response=requests.get(self.dummy_url))
             self.assertEqual(str(exception), 'Daily search limit reached')
 
 
