@@ -49,14 +49,19 @@ python usage.py --dir [--databases] [--minimum-similarity] [--combine-api-types]
 you can also use it to get the gathered information for your own script:
 ```
 filtered_results = saucenao.check_file(file_name='test.jpg')
+# or with streams/byte objects
+filtered_results = saucenao.check_file(io.BytesIO(b'\x00'))
 ```
 
 or get a generator object for a bulk of files using the worker class, all parameters work here too:
 ```
 from saucenao import Worker
 
-results = Worker(directory='directory', files=('test.jpg', 'test2.jpg')).run()
+results = Worker(directory='directory', files=('test.jpg', 'test2.jpg', io.BytesIO(b'\x00'))).run()
 ```
+
+the worker automatically differentiates between file names and BinaryIO objects,
+so you can simply pass both types at the same time.
 
 ## Running the tests
 In the tests folder you can run each unittest individually.  
