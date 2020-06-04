@@ -6,7 +6,7 @@ import logging
 import os
 import re
 import time
-from typing import Generator, BinaryIO
+from typing import Generator, BinaryIO, Iterable
 
 import requests
 from bs4 import BeautifulSoup as Soup
@@ -306,7 +306,8 @@ class SauceNao(object):
         return sorted(results, key=lambda k: float(k['header']['similarity']), reverse=True)
 
     def __filter_results(self, sorted_results) -> list:
-        """Return results with a similarity bigger or the same as the defined similarity from the arguments (default 65%)
+        """Return results with a similarity bigger or the same as the defined similarity from the arguments
+        (default 65%)
 
         :type sorted_results: list|tuple|Generator
         :return:
@@ -321,11 +322,11 @@ class SauceNao(object):
         return filtered_results
 
     @staticmethod
-    def get_content_value(results, key: str):
+    def get_content_value(results: Iterable, key: str):
         """Return the first match of Material in content
         multiple sites have a categorisation which SauceNao utilizes to provide it in the content section
 
-        :type results: list|tuple|Generator
+        :type results: Iterable
         :type key: str
         :return:
         """
@@ -337,11 +338,11 @@ class SauceNao(object):
         return ''
 
     @staticmethod
-    def get_title_value(results, key: str):
+    def get_title_value(results: Iterable, key: str):
         """Return the first match of Material in the title section
         SauceNAO provides the authors name in the title section f.e. if provided by the indexed entry
 
-        :type results: list|tuple|Generator
+        :type results: Iterable
         :type key: str
         :return:
         """

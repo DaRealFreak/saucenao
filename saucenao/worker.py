@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 import time
-from typing import BinaryIO
+from typing import BinaryIO, Union, Iterable
 
 try:
     from titlesearch import get_similar_titles
@@ -16,12 +16,12 @@ class Worker(SauceNao):
     Worker class for checking a list of files
     """
 
-    def __init__(self, files, *args, **kwargs):
+    def __init__(self, files: Iterable[Union[BinaryIO, str]], *args, **kwargs):
         """
         initializing function
 
-        :type files: list|tuple|Generator
-        :param args:
+        :type files: Iterable
+        :type args:
         :param kwargs:
         """
         super().__init__(*args, **kwargs)
@@ -83,7 +83,7 @@ class Worker(SauceNao):
                 return self.complete_file_list
         return self.complete_file_list
 
-    def __get_category(self, results):
+    def __get_category(self, results: Union[Iterable]):
         """retrieve the category of the checked image based which can be either
         the content of the image or the author of the image
 
@@ -108,11 +108,11 @@ class Worker(SauceNao):
         # take the first category
         return categories[0]
 
-    def __move_to_categories(self, file_name: str, results):
+    def __move_to_categories(self, file_name: str, results: Iterable):
         """Check the file for categories and move it to the corresponding folder
 
         :type file_name: str
-        :type results: list|tuple|Generator
+        :type results: Iterable
         :return: bool
         """
         category = self.__get_category(results)
