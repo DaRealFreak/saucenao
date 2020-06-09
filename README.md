@@ -48,9 +48,10 @@ python usage.py --dir [--databases] [--minimum-similarity] [--combine-api-types]
 
 you can also use it to get the gathered information for your own script:
 ```
+# check with file names
 filtered_results = saucenao.check_file(file_name='test.jpg')
 # or with streams/byte objects
-filtered_results = saucenao.check_file(io.BytesIO(b'\x00'))
+filtered_results = saucenao.check_file_object(io.BytesIO(b'\x00'))
 ```
 
 or get a generator object for a bulk of files using the worker class, all parameters work here too:
